@@ -1,4 +1,4 @@
-package com.muhwezi.networkbridge.ui.mikrotik.plans
+package com.muhwezi.networkbridge.ui.admin.firewall
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -6,7 +6,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -15,13 +14,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.muhwezi.networkbridge.data.model.HotspotPlan
+import com.muhwezi.networkbridge.data.model.GlobalFirewallAddress
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HotspotPlansScreen(
+fun GlobalFirewallScreen(
     onNavigateBack: () -> Unit,
-    viewModel: HotspotPlansViewModel = hiltViewModel()
+    viewModel: GlobalFirewallViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
@@ -35,22 +34,17 @@ fun HotspotPlansScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Hotspot Plans") },
+                title = { Text("Global Firewall") },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.Default.ArrowBack, "Back")
-                    }
-                },
-                actions = {
-                    IconButton(onClick = viewModel::syncPlans) {
-                        Icon(Icons.Default.Refresh, "Sync")
                     }
                 }
             )
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = viewModel::showCreateDialog) {
-                Icon(Icons.Default.Add, "Create Plan")
+            FloatingActionButton(onClick = viewModel::showAddDialog) {
+                Icon(Icons.Default.Add, "Add Address")
             }
         }
     ) { paddingValues ->
@@ -98,21 +92,21 @@ fun HotspotPlansScreen(
                         }
                     }
 
-                    // Plans List
-                    if (uiState.plans.isEmpty()) {
+                    // Addresses List
+                    if (uiState.addresses.isEmpty()) {
                         Box(
                             modifier = Modifier.fillMaxSize(),
                             contentAlignment = Alignment.Center
                         ) {
-                            Text("No plans found. Create one or sync from router.")
+                            Text("No global firewall addresses found.")
                         }
                     } else {
                         LazyColumn(
                             contentPadding = PaddingValues(16.dp),
                             verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            items(uiState.plans) { plan ->
-                                PlanCard(plan)
+                            items(uiState.addresses) { address ->
+                                FirewallAddressCard(address)
                             }
                         }
                     }
@@ -121,75 +115,85 @@ fun HotspotPlansScreen(
         }
     }
 
-    if (uiState.showCreateDialog) {
-        CreatePlanDialog(
-            planName = uiState.planName,
-            planPrice = uiState.planPrice,
-            uptimeLimit = uiState.uptimeLimit,
-            dataLimit = uiState.dataLimit,
-            sharedUsers = uiState.sharedUsers,
-            onPlanNameChange = viewModel::onPlanNameChange,
-            onPlanPriceChange = viewModel::onPlanPriceChange,
-            onUptimeLimitChange = viewModel::onUptimeLimitChange,
-            onDataLimitChange = viewModel::onDataLimitChange,
-            onSharedUsersChange = viewModel::onSharedUsersChange,
-            onDismiss = viewModel::hideCreateDialog,
-            onCreate = viewModel::createPlan
+    if (uiState.showAddDialog) {
+        AddFirewallAddressDialog(
+            listName = uiState.listName,
+            address = uiState.address,
+            comment = uiState.comment,
+            onListNameChange = viewModel::onListNameChange,
+            onAddressChange = viewModel::onAddressChange,
+            onCommentChange = viewModel::onCommentChange,
+            onDismiss = viewModel::hideAddDialog,
+            onAdd = viewModel::addAddress
         )
     }
 }
 
 @Composable
-fun PlanCard(plan: HotspotPlan) {
+fun FirewallAddressCard(address: GlobalFirewallAddress) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = address.listName ?: "Unknown",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Text(
+                    text = address.createdAt?.substringBefore("T") ?: "",
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
+            Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = plan.name ?: "Unknown",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = "Price: UGX ${plan.price}",
+                text = address.address ?: "",
                 style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.primary
+                fontWeight = FontWeight.Medium
             )
+            if (!address.comment.isNullOrBlank()) {
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = address.comment ?: "",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.secondary
+                )
+            }
         }
     }
 }
 
 @Composable
-fun CreatePlanDialog(
-    planName: String,
-    planPrice: String,
-    uptimeLimit: String,
-    dataLimit: String,
-    sharedUsers: String,
-    onPlanNameChange: (String) -> Unit,
-    onPlanPriceChange: (String) -> Unit,
-    onUptimeLimitChange: (String) -> Unit,
-    onDataLimitChange: (String) -> Unit,
-    onSharedUsersChange: (String) -> Unit,
+fun AddFirewallAddressDialog(
+    listName: String,
+    address: String,
+    comment: String,
+    onListNameChange: (String) -> Unit,
+    onAddressChange: (String) -> Unit,
+    onCommentChange: (String) -> Unit,
     onDismiss: () -> Unit,
-    onCreate: () -> Unit
+    onAdd: () -> Unit
 ) {
     Dialog(onDismissRequest = onDismiss) {
         Card {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(
-                    text = "Create Hotspot Plan",
+                    text = "Add Global Firewall Address",
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold
                 )
                 Spacer(modifier = Modifier.height(16.dp))
 
                 OutlinedTextField(
-                    value = planName,
-                    onValueChange = onPlanNameChange,
-                    label = { Text("Plan Name *") },
+                    value = listName,
+                    onValueChange = onListNameChange,
+                    label = { Text("List Name (e.g. blacklist) *") },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true
                 )
@@ -197,9 +201,9 @@ fun CreatePlanDialog(
                 Spacer(modifier = Modifier.height(8.dp))
 
                 OutlinedTextField(
-                    value = planPrice,
-                    onValueChange = onPlanPriceChange,
-                    label = { Text("Price *") },
+                    value = address,
+                    onValueChange = onAddressChange,
+                    label = { Text("Address/Domain *") },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true
                 )
@@ -207,29 +211,9 @@ fun CreatePlanDialog(
                 Spacer(modifier = Modifier.height(8.dp))
 
                 OutlinedTextField(
-                    value = uptimeLimit,
-                    onValueChange = onUptimeLimitChange,
-                    label = { Text("Uptime Limit (seconds)") },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                OutlinedTextField(
-                    value = dataLimit,
-                    onValueChange = onDataLimitChange,
-                    label = { Text("Data Limit (bytes)") },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                OutlinedTextField(
-                    value = sharedUsers,
-                    onValueChange = onSharedUsersChange,
-                    label = { Text("Shared Users") },
+                    value = comment,
+                    onValueChange = onCommentChange,
+                    label = { Text("Comment") },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true
                 )
@@ -245,8 +229,8 @@ fun CreatePlanDialog(
                         Text("Cancel")
                     }
                     Spacer(modifier = Modifier.width(8.dp))
-                    Button(onClick = onCreate) {
-                        Text("Create")
+                    Button(onClick = onAdd) {
+                        Text("Add")
                     }
                 }
             }

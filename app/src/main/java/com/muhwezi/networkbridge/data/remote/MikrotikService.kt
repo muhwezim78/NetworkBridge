@@ -42,4 +42,13 @@ interface MikrotikService {
 
     @POST("routers/{id}/execute")
     suspend fun executeCommand(@Path("id") routerId: String, @Body request: ExecuteCommandRequest): Response<ExecuteCommandResponse>
+
+    @POST("mikrotik/pppoe/plans")
+    suspend fun createPPPoEPlan(@Body request: CreatePPPoEPlanRequest): Response<Unit>
+
+    @POST("mikrotik/pppoe/plans/sync")
+    suspend fun syncPPPoEPlans(@Body request: SyncPPPoEPlansRequest): Response<Unit>
+
+    @GET("routers/{id}/pppoe/plans")
+    suspend fun getPPPoEPlans(@Path("id") routerId: String): Response<List<PPPoEPlan>>
 }

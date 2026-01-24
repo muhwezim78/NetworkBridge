@@ -3,14 +3,13 @@ package com.muhwezi.networkbridge.ui.mikrotik.vouchers
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.muhwezi.networkbridge.data.model.GenerateVouchersRequest
-import com.muhwezi.networkbridge.data.model.VoucherResponse
+import com.muhwezi.networkbridge.data.model.*
 import com.muhwezi.networkbridge.data.repository.MikrotikRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import java.io.File
+import java.io.FileOutputStream
 import javax.inject.Inject
 
 @HiltViewModel
@@ -116,6 +115,41 @@ class VoucherViewModel @Inject constructor(
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
                     error = result.exceptionOrNull()?.message ?: "Failed to generate vouchers"
+                )
+            }
+        }
+    }
+
+    fun generateVoucherPdf(cacheDir: File, onReadyToShare: (File) -> Unit) {
+        if (_uiState.value.vouchers.isEmpty()) return
+
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isLoading = true, error = null)
+            val credentials = _uiState.value.vouchers.map { 
+                VoucherCredentials(it.code ?: "", "")
+            }
+            
+            val request = VoucherPdfRequest(routerId, credentials, true)
+            val result = mikrotikRepository.generateVoucherPdf(request)
+            
+            if (result.isSuccess) {
+                val responseBody = result.getOrNull()
+                if (responseBody != null) {
+                    try {
+                        val file = File(cacheDir, "vouchers_${System.currentTimeMillis()}.pdf")
+                        FileOutputStream(file).use { output ->
+                            responseBody.byteStream().copyTo(output)
+                        }
+                        _uiState.value = _uiState.value.copy(isLoading = false)
+                        onReadyToShare(file)
+                    } catch (e: Exception) {
+                        _uiState.value = _uiState.value.copy(isLoading = false, error = "Failed to save PDF: ${e.message}")
+                    }
+                }
+            } else {
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    error = result.exceptionOrNull()?.message ?: "Failed to generate PDF"
                 )
             }
         }

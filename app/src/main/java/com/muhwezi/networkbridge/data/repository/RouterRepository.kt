@@ -1,7 +1,6 @@
 package com.muhwezi.networkbridge.data.repository
 
-import com.muhwezi.networkbridge.data.model.CreateRouterRequest
-import com.muhwezi.networkbridge.data.model.Router
+import com.muhwezi.networkbridge.data.model.*
 import com.muhwezi.networkbridge.data.remote.RouterService
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -64,5 +63,47 @@ class RouterRepository @Inject constructor(
         } catch (e: Exception) {
             Result.failure(e)
         }
+    }
+
+    suspend fun getRouterLogs(routerId: String): Result<List<RouterLog>> {
+        return try {
+            val response = routerService.getRouterLogs(routerId)
+            if (response.isSuccessful && response.body() != null) Result.success(response.body()!!) else Result.failure(Exception("Error: ${response.code()}"))
+        } catch (e: Exception) { Result.failure(e) }
+    }
+
+    suspend fun getRouterBackups(routerId: String): Result<List<RouterBackup>> {
+        return try {
+            val response = routerService.getRouterBackups(routerId)
+            if (response.isSuccessful && response.body() != null) Result.success(response.body()!!) else Result.failure(Exception("Error: ${response.code()}"))
+        } catch (e: Exception) { Result.failure(e) }
+    }
+
+    suspend fun getIPPools(routerId: String): Result<List<IPPool>> {
+        return try {
+            val response = routerService.getIPPools(routerId)
+            if (response.isSuccessful && response.body() != null) Result.success(response.body()!!) else Result.failure(Exception("Error: ${response.code()}"))
+        } catch (e: Exception) { Result.failure(e) }
+    }
+
+    suspend fun getTrafficStats(routerId: String): Result<List<TrafficStat>> {
+        return try {
+            val response = routerService.getTrafficStats(routerId)
+            if (response.isSuccessful && response.body() != null) Result.success(response.body()!!) else Result.failure(Exception("Error: ${response.code()}"))
+        } catch (e: Exception) { Result.failure(e) }
+    }
+
+    suspend fun setupTrafficFlow(routerId: String): Result<Unit> {
+        return try {
+            val response = routerService.setupTrafficFlow(routerId)
+            if (response.isSuccessful) Result.success(Unit) else Result.failure(Exception("Error: ${response.code()}"))
+        } catch (e: Exception) { Result.failure(e) }
+    }
+
+    suspend fun setupRemoteLogging(routerId: String): Result<Unit> {
+        return try {
+            val response = routerService.setupRemoteLogging(routerId)
+            if (response.isSuccessful) Result.success(Unit) else Result.failure(Exception("Error: ${response.code()}"))
+        } catch (e: Exception) { Result.failure(e) }
     }
 }

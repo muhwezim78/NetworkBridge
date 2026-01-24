@@ -25,11 +25,25 @@ import com.muhwezi.networkbridge.ui.mikrotik.vouchers.VoucherScreen
 import com.muhwezi.networkbridge.ui.router.CreateRouterScreen
 import com.muhwezi.networkbridge.ui.router.RouterDetailsScreen
 import com.muhwezi.networkbridge.ui.subscription.SubscriptionScreen
+import com.muhwezi.networkbridge.ui.mikrotik.plans.PPPoEPlansScreen
+import com.muhwezi.networkbridge.ui.admin.firewall.GlobalFirewallScreen
+import com.muhwezi.networkbridge.ui.router.TerminalScreen
+import com.muhwezi.networkbridge.ui.mikrotik.users.PPPoEUsersScreen
+import com.muhwezi.networkbridge.data.local.TokenManager
+import androidx.compose.runtime.LaunchedEffect
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
+        // Check if token exists synchronously to determine start destination
+        val tokenManager = TokenManager(applicationContext)
+        val hasToken = runBlocking { tokenManager.token.first() } != null
+        val startDest = if (hasToken) "dashboard" else "login"
+        
         setContent {
             NetworkCoordinatorTheme {
                 Surface(
@@ -37,7 +51,7 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
                     val navController = rememberNavController()
-                    NavHost(navController = navController, startDestination = "login") {
+                    NavHost(navController = navController, startDestination = startDest) {
                         // Authentication - Login
                         composable("login") {
                             LoginScreen(
@@ -100,6 +114,15 @@ class MainActivity : ComponentActivity() {
                                 },
                                 onNavigateToActiveUsers = { routerId ->
                                     navController.navigate("active_users/$routerId")
+                                },
+                                onNavigateToPPPoEPlans = { routerId ->
+                                    navController.navigate("pppoe_plans/$routerId")
+                                },
+                                onNavigateToTerminal = { routerId ->
+                                    navController.navigate("terminal/$routerId")
+                                },
+                                onNavigateToPPPoEUsers = { routerId ->
+                                    navController.navigate("pppoe_users/$routerId")
                                 }
                             )
                         }
@@ -131,7 +154,6 @@ class MainActivity : ComponentActivity() {
                             )
                         }
 
-                        // Mikrotik Features - Active Users
                         composable(
                             "active_users/{routerId}",
                             arguments = listOf(navArgument("routerId") { type = NavType.StringType })
@@ -141,9 +163,27 @@ class MainActivity : ComponentActivity() {
                             )
                         }
 
+                        // Mikrotik Features - PPPoE Plans
+                        composable(
+                            "pppoe_plans/{routerId}",
+                            arguments = listOf(navArgument("routerId") { type = NavType.StringType })
+                        ) {
+                            PPPoEPlansScreen(
+                                onNavigateBack = { navController.popBackStack() }
+                            )
+                        }
+
                         // User Management (Admin)
                         composable("user_management") {
                             UserManagementScreen(
+                                onNavigateBack = { navController.popBackStack() },
+                                onNavigateToGlobalFirewall = { navController.navigate("global_firewall") }
+                            )
+                        }
+
+                        // Global Firewall (Admin)
+                        composable("global_firewall") {
+                            GlobalFirewallScreen(
                                 onNavigateBack = { navController.popBackStack() }
                             )
                         }
@@ -151,6 +191,26 @@ class MainActivity : ComponentActivity() {
                         // Accounting & Dashboard
                         composable("accounting") {
                             AccountingScreen(
+                                onNavigateBack = { navController.popBackStack() }
+                            )
+                        }
+
+                        // Router Terminal
+                        composable(
+                            "terminal/{routerId}",
+                            arguments = listOf(navArgument("routerId") { type = NavType.StringType })
+                        ) {
+                            TerminalScreen(
+                                onNavigateBack = { navController.popBackStack() }
+                            )
+                        }
+
+                        // PPPoE Users
+                        composable(
+                            "pppoe_users/{routerId}",
+                            arguments = listOf(navArgument("routerId") { type = NavType.StringType })
+                        ) {
+                            PPPoEUsersScreen(
                                 onNavigateBack = { navController.popBackStack() }
                             )
                         }

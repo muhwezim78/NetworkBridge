@@ -133,7 +133,7 @@ fun DashboardStatsCard(stats: DashboardStats) {
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                StatItem("Revenue", "$${stats.totalRevenue}")
+                StatItem("Revenue", "UGX ${stats.totalRevenue}")
                 StatItem("Subscriptions", stats.activeSubscriptions.toString())
             }
         }
@@ -172,7 +172,7 @@ fun RevenueReportCard(report: IncomeReport) {
         ) {
             Column {
                 Text(
-                    text = report.date,
+                    text = report.date ?: "N/A",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )
@@ -183,7 +183,7 @@ fun RevenueReportCard(report: IncomeReport) {
                 )
             }
             Text(
-                text = "$${report.amount}",
+                text = "UGX ${report.amount}",
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary

@@ -1,4 +1,4 @@
-package com.muhwezi.networkbridge.ui.mikrotik.vouchers
+package com.muhwezi.networkbridge.ui.mikrotik.plans
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -7,7 +7,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -15,17 +14,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.platform.LocalContext
-import androidx.core.content.FileProvider
-import android.content.Intent
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.muhwezi.networkbridge.data.model.VoucherResponse
+import com.muhwezi.networkbridge.data.model.PPPoEPlan
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun VoucherScreen(
+fun PPPoEPlansScreen(
     onNavigateBack: () -> Unit,
-    viewModel: VoucherViewModel = hiltViewModel()
+    viewModel: PPPoEPlansViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
@@ -39,40 +35,22 @@ fun VoucherScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Vouchers") },
+                title = { Text("PPPoE Plans") },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.Default.ArrowBack, "Back")
                     }
                 },
                 actions = {
-                    val context = LocalContext.current
-                    IconButton(onClick = {
-                        viewModel.generateVoucherPdf(context.cacheDir) { file ->
-                            val uri = FileProvider.getUriForFile(
-                                context,
-                                "${context.packageName}.provider",
-                                file
-                            )
-                            val intent = Intent(Intent.ACTION_SEND).apply {
-                                type = "application/pdf"
-                                putExtra(Intent.EXTRA_STREAM, uri)
-                                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                            }
-                            context.startActivity(Intent.createChooser(intent, "Share Vouchers PDF"))
-                        }
-                    }) {
-                        Icon(Icons.Default.Send, "Share PDF")
-                    }
-                    IconButton(onClick = viewModel::loadVouchers) {
-                        Icon(Icons.Default.Refresh, "Refresh")
+                    IconButton(onClick = viewModel::syncPlans) {
+                        Icon(Icons.Default.Refresh, "Sync")
                     }
                 }
             )
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = viewModel::showGenerateDialog) {
-                Icon(Icons.Default.Add, "Generate Vouchers")
+            FloatingActionButton(onClick = viewModel::showCreateDialog) {
+                Icon(Icons.Default.Add, "Create Plan")
             }
         }
     ) { paddingValues ->
@@ -120,21 +98,21 @@ fun VoucherScreen(
                         }
                     }
 
-                    // Vouchers List
-                    if (uiState.vouchers.isEmpty()) {
+                    // Plans List
+                    if (uiState.plans.isEmpty()) {
                         Box(
                             modifier = Modifier.fillMaxSize(),
                             contentAlignment = Alignment.Center
                         ) {
-                            Text("No vouchers found. Generate some!")
+                            Text("No plans found. Create one or sync from router.")
                         }
                     } else {
                         LazyColumn(
                             contentPadding = PaddingValues(16.dp),
                             verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            items(uiState.vouchers) { voucher ->
-                                VoucherCard(voucher)
+                            items(uiState.plans) { plan ->
+                                PPPoEPlanCard(plan)
                             }
                         }
                     }
@@ -143,75 +121,78 @@ fun VoucherScreen(
         }
     }
 
-    if (uiState.showGenerateDialog) {
-        GenerateVouchersDialog(
-            planId = uiState.planId,
-            count = uiState.count,
-            passwordMode = uiState.passwordMode,
-            length = uiState.length,
-            onPlanIdChange = viewModel::onPlanIdChange,
-            onCountChange = viewModel::onCountChange,
-            onPasswordModeChange = viewModel::onPasswordModeChange,
-            onLengthChange = viewModel::onLengthChange,
-            onDismiss = viewModel::hideGenerateDialog,
-            onGenerate = viewModel::generateVouchers
+    if (uiState.showCreateDialog) {
+        CreatePPPoEPlanDialog(
+            planName = uiState.planName,
+            planPrice = uiState.planPrice,
+            localAddress = uiState.localAddress,
+            remoteAddress = uiState.remoteAddress,
+            rateLimit = uiState.rateLimit,
+            onPlanNameChange = viewModel::onPlanNameChange,
+            onPlanPriceChange = viewModel::onPlanPriceChange,
+            onLocalAddressChange = viewModel::onLocalAddressChange,
+            onRemoteAddressChange = viewModel::onRemoteAddressChange,
+            onRateLimitChange = viewModel::onRateLimitChange,
+            onDismiss = viewModel::hideCreateDialog,
+            onCreate = viewModel::createPlan
         )
     }
 }
 
 @Composable
-fun VoucherCard(voucher: VoucherResponse) {
+fun PPPoEPlanCard(plan: PPPoEPlan) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
-                text = "Code: ${voucher.code}",
+                text = plan.name ?: "Unnamed Plan",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
             )
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "ID: ${voucher.id}",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                text = "Price: UGX ${plan.price}",
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.primary
             )
+            Text(text = "Local Address: ${plan.localAddress}", style = MaterialTheme.typography.bodySmall)
+            Text(text = "Remote Address: ${plan.remoteAddress}", style = MaterialTheme.typography.bodySmall)
+            Text(text = "Rate Limit: ${plan.rateLimit}", style = MaterialTheme.typography.bodySmall)
         }
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun GenerateVouchersDialog(
-    planId: String,
-    count: String,
-    passwordMode: String,
-    length: String,
-    onPlanIdChange: (String) -> Unit,
-    onCountChange: (String) -> Unit,
-    onPasswordModeChange: (String) -> Unit,
-    onLengthChange: (String) -> Unit,
+fun CreatePPPoEPlanDialog(
+    planName: String,
+    planPrice: String,
+    localAddress: String,
+    remoteAddress: String,
+    rateLimit: String,
+    onPlanNameChange: (String) -> Unit,
+    onPlanPriceChange: (String) -> Unit,
+    onLocalAddressChange: (String) -> Unit,
+    onRemoteAddressChange: (String) -> Unit,
+    onRateLimitChange: (String) -> Unit,
     onDismiss: () -> Unit,
-    onGenerate: () -> Unit
+    onCreate: () -> Unit
 ) {
-    var expandedPasswordMode by remember { mutableStateOf(false) }
-    val passwordModes = listOf("random", "same_as_username", "blank")
-
     Dialog(onDismissRequest = onDismiss) {
         Card {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(
-                    text = "Generate Vouchers",
+                    text = "Create PPPoE Plan",
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold
                 )
                 Spacer(modifier = Modifier.height(16.dp))
 
                 OutlinedTextField(
-                    value = planId,
-                    onValueChange = onPlanIdChange,
-                    label = { Text("Plan ID *") },
+                    value = planName,
+                    onValueChange = onPlanNameChange,
+                    label = { Text("Plan Name *") },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true
                 )
@@ -219,51 +200,39 @@ fun GenerateVouchersDialog(
                 Spacer(modifier = Modifier.height(8.dp))
 
                 OutlinedTextField(
-                    value = count,
-                    onValueChange = onCountChange,
-                    label = { Text("Count *") },
+                    value = planPrice,
+                    onValueChange = onPlanPriceChange,
+                    label = { Text("Price *") },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true
                 )
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                ExposedDropdownMenuBox(
-                    expanded = expandedPasswordMode,
-                    onExpandedChange = { expandedPasswordMode = !expandedPasswordMode }
-                ) {
-                    OutlinedTextField(
-                        value = passwordMode,
-                        onValueChange = {},
-                        readOnly = true,
-                        label = { Text("Password Mode") },
-                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedPasswordMode) },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .menuAnchor()
-                    )
-                    ExposedDropdownMenu(
-                        expanded = expandedPasswordMode,
-                        onDismissRequest = { expandedPasswordMode = false }
-                    ) {
-                        passwordModes.forEach { mode ->
-                            DropdownMenuItem(
-                                text = { Text(mode) },
-                                onClick = {
-                                    onPasswordModeChange(mode)
-                                    expandedPasswordMode = false
-                                }
-                            )
-                        }
-                    }
-                }
+                OutlinedTextField(
+                    value = localAddress,
+                    onValueChange = onLocalAddressChange,
+                    label = { Text("Local Address") },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true
+                )
 
                 Spacer(modifier = Modifier.height(8.dp))
 
                 OutlinedTextField(
-                    value = length,
-                    onValueChange = onLengthChange,
-                    label = { Text("Length") },
+                    value = remoteAddress,
+                    onValueChange = onRemoteAddressChange,
+                    label = { Text("Remote Address") },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                OutlinedTextField(
+                    value = rateLimit,
+                    onValueChange = onRateLimitChange,
+                    label = { Text("Rate Limit (e.g. 10M/10M)") },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true
                 )
@@ -272,14 +241,15 @@ fun GenerateVouchersDialog(
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End
+                    horizontalArrangement = Arrangement.End,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     TextButton(onClick = onDismiss) {
                         Text("Cancel")
                     }
                     Spacer(modifier = Modifier.width(8.dp))
-                    Button(onClick = onGenerate) {
-                        Text("Generate")
+                    Button(onClick = onCreate) {
+                        Text("Create")
                     }
                 }
             }

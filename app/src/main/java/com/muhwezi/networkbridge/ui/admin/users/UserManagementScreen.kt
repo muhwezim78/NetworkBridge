@@ -7,6 +7,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.List
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -21,6 +22,7 @@ import com.muhwezi.networkbridge.data.model.UserItem
 @Composable
 fun UserManagementScreen(
     onNavigateBack: () -> Unit,
+    onNavigateToGlobalFirewall: () -> Unit = {},
     viewModel: UserManagementViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -42,6 +44,9 @@ fun UserManagementScreen(
                     }
                 },
                 actions = {
+                    IconButton(onClick = onNavigateToGlobalFirewall) {
+                        Icon(Icons.Default.List, "Global Firewall")
+                    }
                     IconButton(onClick = viewModel::loadUsers) {
                         Icon(Icons.Default.Refresh, "Refresh")
                     }

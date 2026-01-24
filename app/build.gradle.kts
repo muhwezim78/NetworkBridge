@@ -23,7 +23,7 @@ android {
         }
         
         // Add BuildConfig fields
-        buildConfigField("String", "API_BASE_URL", "\"https://7b9fc641e8b8.ngrok-free.app/\"")
+        buildConfigField("String", "API_BASE_URL", "\"https://519557d6ebe9.ngrok-free.app/\"")
     }
 
     buildTypes {

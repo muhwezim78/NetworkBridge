@@ -86,4 +86,25 @@ class MikrotikRepository @Inject constructor(
             if (response.isSuccessful && response.body() != null) Result.success(response.body()!!) else Result.failure(Exception("Error: ${response.code()}"))
         } catch (e: Exception) { Result.failure(e) }
     }
+
+    suspend fun createPPPoEPlan(request: CreatePPPoEPlanRequest): Result<Unit> {
+        return try {
+            val response = mikrotikService.createPPPoEPlan(request)
+            if (response.isSuccessful) Result.success(Unit) else Result.failure(Exception("Error: ${response.code()}"))
+        } catch (e: Exception) { Result.failure(e) }
+    }
+
+    suspend fun syncPPPoEPlans(routerId: String): Result<Unit> {
+        return try {
+            val response = mikrotikService.syncPPPoEPlans(SyncPPPoEPlansRequest(routerId))
+            if (response.isSuccessful) Result.success(Unit) else Result.failure(Exception("Error: ${response.code()}"))
+        } catch (e: Exception) { Result.failure(e) }
+    }
+
+    suspend fun getPPPoEPlans(routerId: String): Result<List<PPPoEPlan>> {
+        return try {
+            val response = mikrotikService.getPPPoEPlans(routerId)
+            if (response.isSuccessful && response.body() != null) Result.success(response.body()!!) else Result.failure(Exception("Error: ${response.code()}"))
+        } catch (e: Exception) { Result.failure(e) }
+    }
 }

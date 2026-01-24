@@ -11,6 +11,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.foundation.background
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.muhwezi.networkbridge.data.model.Router
@@ -54,7 +58,25 @@ fun DashboardScreen(
         Scaffold(
             topBar = {
                 TopAppBar(
-                    title = { Text("Network Dashboard") },
+                    title = {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text("Network Dashboard")
+                            if (uiState.isLive) {
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Box(
+                                    modifier = Modifier
+                                        .size(8.dp)
+                                        .background(Color.Green, CircleShape)
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    "Live",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = Color.Green
+                                )
+                            }
+                        }
+                    },
                     navigationIcon = {
                         IconButton(onClick = { scope.launch { drawerState.open() } }) {
                             Icon(Icons.Default.Menu, "Menu")
@@ -85,8 +107,20 @@ fun DashboardScreen(
                 } else {
                     LazyColumn(
                         contentPadding = PaddingValues(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
+                        item {
+                            Row(
+                                modifier = Modifier.fillMaxWidth().horizontalScroll(androidx.compose.foundation.rememberScrollState()),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                SummaryCard("Total Routers", uiState.totalRouters.toString(), Icons.Default.Settings)
+                                SummaryCard("Online", uiState.routersOnline.toString(), Icons.Default.CheckCircle)
+                                SummaryCard("Income", "UGX ${uiState.todayIncome}", Icons.Default.ShoppingCart)
+                                SummaryCard("Vouchers", uiState.activeVouchers.toString(), Icons.Default.Info)
+                            }
+                        }
+
                         items(uiState.devices) { device ->
                             DeviceCard(
                                 device = device,
@@ -190,6 +224,29 @@ fun DeviceCard(
                     Text("Restart")
                 }
             }
+        }
+    }
+}
+@Composable
+fun SummaryCard(title: String, value: String, icon: ImageVector) {
+    Card(
+        modifier = Modifier.width(160.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(24.dp)
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(text = title, style = MaterialTheme.typography.labelMedium)
+            Text(
+                text = value,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold
+            )
         }
     }
 }

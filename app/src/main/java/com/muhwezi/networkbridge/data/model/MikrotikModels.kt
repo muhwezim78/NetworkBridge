@@ -20,9 +20,13 @@ data class CreateHotspotPlanRequest(
 
 data class HotspotPlan(
     @SerializedName("id") val id: String,
-    @SerializedName("name") val name: String,
-    @SerializedName("price") val price: Double,
-    // Add other fields if returned by GET /routers/{id}/hotspot/plans
+    @SerializedName("router_id") val routerId: String? = null,
+    @SerializedName("name") val name: String? = null,
+    @SerializedName("price") val price: Double = 0.0,
+    @SerializedName("uptime_limit") val uptimeLimit: Long? = null,
+    @SerializedName("data_limit") val dataLimit: Long? = null,
+    @SerializedName("shared_users") val sharedUsers: Int = 1,
+    @SerializedName("rate_limit") val rateLimit: String? = null
 )
 
 data class GenerateVouchersRequest(
@@ -42,8 +46,17 @@ data class GenerateVouchersResponse(
 
 data class VoucherResponse(
     @SerializedName("id") val id: String,
-    @SerializedName("code") val code: String,
-    // Add other fields as needed
+    @SerializedName("code") val code: String? = null,
+    @SerializedName("password") val password: String? = null,
+    @SerializedName("status") val status: String? = null,
+    @SerializedName("plan_id") val planId: String? = null,
+    @SerializedName("router_id") val routerId: String? = null,
+    @SerializedName("created_at") val createdAt: String? = null,
+    @SerializedName("first_use_at") val firstUseAt: String? = null,
+    @SerializedName("validity_period") val validityPeriod: String? = null,
+    @SerializedName("uptime_used") val uptimeUsed: Long? = null,
+    @SerializedName("bytes_in") val bytesIn: Long? = null,
+    @SerializedName("bytes_out") val bytesOut: Long? = null
 )
 
 data class VoucherPdfRequest(
@@ -58,25 +71,36 @@ data class VoucherCredentials(
 )
 
 data class ActiveHotspotUser(
-    @SerializedName("id") val id: String,
-    @SerializedName("server") val server: String,
-    @SerializedName("user") val user: String,
-    @SerializedName("address") val address: String,
-    @SerializedName("uptime") val uptime: String,
-    // Add other fields
+    @SerializedName("username") val user: String? = null,
+    @SerializedName("address") val address: String? = null,
+    @SerializedName("uptime") val uptime: String? = null,
+    @SerializedName("session_time_left") val sessionTimeLeft: String? = null,
+    @SerializedName("bytes_in") val bytesIn: Long = 0,
+    @SerializedName("bytes_out") val bytesOut: Long = 0,
+    @SerializedName("bytes_total") val bytesTotal: Long = 0,
+    // For UI compatibility
+    val server: String? = null,
+    val id: String? = null
 )
 
 data class HotspotUserResponse(
-    @SerializedName("id") val id: String,
-    @SerializedName("name") val name: String,
-    @SerializedName("profile") val profile: String,
-    // Add other fields
+    @SerializedName("id") val id: String? = null,
+    @SerializedName("name") val name: String? = null,
+    @SerializedName("password") val password: String? = null,
+    @SerializedName("profile") val profile: String? = null,
+    @SerializedName("limit_uptime") val limitUptime: String? = null,
+    @SerializedName("limit_bytes_total") val limitBytesTotal: String? = null,
+    @SerializedName("comment") val comment: String? = null
 )
 
 data class HotspotProfile(
-    @SerializedName("id") val id: String,
-    @SerializedName("name") val name: String,
-    // Add other fields
+    @SerializedName("name") val name: String? = null,
+    @SerializedName("shared_users") val sharedUsers: String? = null,
+    @SerializedName("rate_limit") val rateLimit: String? = null,
+    @SerializedName("session_timeout") val sessionTimeout: String? = null,
+    @SerializedName("idle_timeout") val idleTimeout: String? = null,
+    @SerializedName("keepalive_timeout") val keepaliveTimeout: String? = null,
+    val id: String? = null
 )
 
 data class ExecuteCommandRequest(
@@ -85,4 +109,27 @@ data class ExecuteCommandRequest(
 
 data class ExecuteCommandResponse(
     @SerializedName("output") val output: Any // Can be JSON object or string
+)
+
+data class PPPoEPlan(
+    @SerializedName("id") val id: String,
+    @SerializedName("router_id") val routerId: String? = null,
+    @SerializedName("name") val name: String? = null,
+    @SerializedName("price") val price: Double = 0.0,
+    @SerializedName("local_address") val localAddress: String? = null,
+    @SerializedName("remote_address") val remoteAddress: String? = null,
+    @SerializedName("rate_limit") val rateLimit: String? = null
+)
+
+data class CreatePPPoEPlanRequest(
+    @SerializedName("router_id") val routerId: String,
+    @SerializedName("name") val name: String,
+    @SerializedName("price") val price: Double,
+    @SerializedName("local_address") val localAddress: String,
+    @SerializedName("remote_address") val remoteAddress: String,
+    @SerializedName("rate_limit") val rateLimit: String
+)
+
+data class SyncPPPoEPlansRequest(
+    @SerializedName("router_id") val routerId: String
 )

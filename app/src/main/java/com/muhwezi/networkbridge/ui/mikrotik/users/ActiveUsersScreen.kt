@@ -82,7 +82,7 @@ fun ActiveUserCard(user: ActiveHotspotUser) {
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
-                text = user.user,
+                text = user.user ?: "Unknown",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
             )
@@ -93,16 +93,16 @@ fun ActiveUserCard(user: ActiveHotspotUser) {
             ) {
                 Column {
                     Text(
-                        text = "Server: ${user.server}",
+                        text = "Server: ${user.server ?: "N/A"}",
                         style = MaterialTheme.typography.bodySmall
                     )
                     Text(
-                        text = "Address: ${user.address}",
+                        text = "Address: ${user.address ?: "N/A"}",
                         style = MaterialTheme.typography.bodySmall
                     )
                 }
                 Text(
-                    text = "Uptime: ${user.uptime}",
+                    text = "Uptime: ${user.uptime ?: "N/A"}",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.primary
                 )

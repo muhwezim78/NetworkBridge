@@ -3,6 +3,7 @@ package com.muhwezi.networkbridge.di
 import com.muhwezi.networkbridge.data.remote.AccountingService
 import com.muhwezi.networkbridge.data.remote.AuthInterceptor
 import com.muhwezi.networkbridge.data.remote.AuthService
+import com.muhwezi.networkbridge.data.remote.FirewallService
 import com.muhwezi.networkbridge.data.remote.MikrotikService
 import com.muhwezi.networkbridge.data.remote.RouterService
 import com.muhwezi.networkbridge.data.remote.SubscriptionService
@@ -92,5 +93,11 @@ object NetworkModule {
     @Singleton
     fun provideAccountingService(retrofit: Retrofit): AccountingService {
         return retrofit.create(AccountingService::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideFirewallService(retrofit: Retrofit): FirewallService {
+        return retrofit.create(FirewallService::class.java)
     }
 }

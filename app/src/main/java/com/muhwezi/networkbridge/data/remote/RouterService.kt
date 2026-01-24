@@ -1,7 +1,6 @@
 package com.muhwezi.networkbridge.data.remote
 
-import com.muhwezi.networkbridge.data.model.CreateRouterRequest
-import com.muhwezi.networkbridge.data.model.Router
+import com.muhwezi.networkbridge.data.model.*
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.DELETE
@@ -24,10 +23,23 @@ interface RouterService {
 
     // Admin only
     @GET("admin/routers")
-    suspend fun adminListRouters(): Response<List<Router>> // Assuming AdminRouterListItem is similar to Router or I should define it. Spec says AdminRouterListItem. I'll use Router for now or check if I need a new model.
-    // Spec says: List of AdminRouterListItem containing router and user info.
-    // I should probably define AdminRouterListItem in RouterModels.kt or UserManagementModels.kt.
-    // For now I'll use Router and maybe add user info fields to Router or create a new class.
-    // Let's check RouterModels.kt again. I didn't add AdminRouterListItem.
-    // I'll stick with List<Router> for now and maybe update later if needed, or just add a TODO.
+    suspend fun adminListRouters(): Response<List<Router>>
+
+    @GET("routers/{id}/logs")
+    suspend fun getRouterLogs(@Path("id") routerId: String): Response<List<RouterLog>>
+
+    @GET("routers/{id}/backups")
+    suspend fun getRouterBackups(@Path("id") routerId: String): Response<List<RouterBackup>>
+
+    @GET("routers/{id}/pools")
+    suspend fun getIPPools(@Path("id") routerId: String): Response<List<IPPool>>
+
+    @GET("routers/{id}/traffic/stats")
+    suspend fun getTrafficStats(@Path("id") routerId: String): Response<List<TrafficStat>>
+
+    @POST("routers/{id}/traffic/setup")
+    suspend fun setupTrafficFlow(@Path("id") routerId: String): Response<Unit>
+
+    @POST("routers/{id}/logs/setup")
+    suspend fun setupRemoteLogging(@Path("id") routerId: String): Response<Unit>
 }
