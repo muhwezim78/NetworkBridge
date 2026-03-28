@@ -123,8 +123,8 @@ fun DashboardStatsCard(stats: DashboardStats) {
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                StatItem("Users", stats.totalUsers.toString())
-                StatItem("Routers", stats.activeRouters.toString())
+                StatItem("Active Users", stats.totalActiveUsers.toString())
+                StatItem("Online Routers", stats.connectedRouters.toString())
             }
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -133,8 +133,8 @@ fun DashboardStatsCard(stats: DashboardStats) {
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                StatItem("Revenue", "UGX ${stats.totalRevenue}")
-                StatItem("Subscriptions", stats.activeSubscriptions.toString())
+                StatItem("Today's Revenue", "UGX ${stats.totalRevenueToday}")
+                StatItem("Total Routers", stats.totalRouters.toString())
             }
         }
     }

@@ -82,7 +82,7 @@ fun ActiveUserCard(user: ActiveHotspotUser) {
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
-                text = user.user ?: "Unknown",
+                text = user.name ?: "Unknown",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
             )

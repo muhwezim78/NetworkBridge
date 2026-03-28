@@ -1,6 +1,6 @@
 [versions]
 activityCompose = "1.12.0"
-agp = "9.0.0"
+agp = "9.0.1"
 composeBom = "2025.11.01"
 composeBomVersion = "2024.06.00"
 converterGson = "3.0.0"

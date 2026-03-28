@@ -23,3 +23,13 @@ data class GenerateTokenRequest(
 data class GenerateTokenResponse(
     @SerializedName("code") val code: String
 )
+
+data class InitiateSubscriptionRequest(
+    @SerializedName("package_type") val packageType: String,
+    @SerializedName("phone_number") val phoneNumber: String
+)
+
+data class InitiateSubscriptionResponse(
+    @SerializedName("invoice_id") val invoiceId: String,
+    @SerializedName("message") val message: String
+)

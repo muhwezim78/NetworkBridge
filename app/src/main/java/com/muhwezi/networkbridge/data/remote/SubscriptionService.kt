@@ -1,9 +1,6 @@
 package com.muhwezi.networkbridge.data.remote
 
-import com.muhwezi.networkbridge.data.model.GenerateTokenRequest
-import com.muhwezi.networkbridge.data.model.GenerateTokenResponse
-import com.muhwezi.networkbridge.data.model.RedeemTokenRequest
-import com.muhwezi.networkbridge.data.model.SubscriptionStatus
+import com.muhwezi.networkbridge.data.model.*
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -18,4 +15,7 @@ interface SubscriptionService {
 
     @POST("admin/generate_token")
     suspend fun generateToken(@Body request: GenerateTokenRequest): Response<GenerateTokenResponse>
+
+    @POST("subscription/initiate")
+    suspend fun initiateSubscription(@Body request: InitiateSubscriptionRequest): Response<InitiateSubscriptionResponse>
 }

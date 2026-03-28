@@ -123,16 +123,37 @@ class RouterDetailsViewModel @Inject constructor(
         }
     }
 
+    fun rebootRouter() {
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isLoading = true)
+            val result = routerRepository.rebootRouter(routerId)
+            if (result.isSuccess) {
+                 // Info message?
+                 _uiState.value = _uiState.value.copy(isLoading = false, error = null) // Reset
+            } else {
+                _uiState.value = _uiState.value.copy(isLoading = false, error = "Failed to reboot router")
+            }
+        }
+    }
+
+    fun shutdownRouter() {
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isLoading = true)
+            val result = routerRepository.shutdownRouter(routerId)
+            if (result.isSuccess) {
+                 _uiState.value = _uiState.value.copy(isLoading = false, error = null)
+            } else {
+                _uiState.value = _uiState.value.copy(isLoading = false, error = "Failed to shutdown router")
+            }
+        }
+    }
+
     fun createBackup() {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoadingBackups = true)
-            val name = "manual_backup_${System.currentTimeMillis()}"
-            val command = "/system backup save name=$name"
-            
-            val result = mikrotikRepository.executeCommand(routerId, command)
+            // Use the new repository method instead of raw command
+            val result = routerRepository.createBackup(routerId)
             if (result.isSuccess) {
-                // Wait a bit for filesystem to update
-                kotlinx.coroutines.delay(2000) 
                 loadBackups()
             } else {
                 _uiState.value = _uiState.value.copy(

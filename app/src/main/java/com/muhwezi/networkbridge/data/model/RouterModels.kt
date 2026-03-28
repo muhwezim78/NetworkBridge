@@ -36,11 +36,10 @@ data class Router(
 data class RouterLog(
     @SerializedName("id") val id: String,
     @SerializedName("router_id") val routerId: String? = null,
-    @SerializedName("facility") val facility: String? = null,
-    @SerializedName("severity") val severity: String? = null,
-    @SerializedName("topic") val topic: String? = null,
     @SerializedName("message") val message: String? = null,
-    @SerializedName("timestamp") val timestamp: String? = null
+    @SerializedName("level") val level: String? = null,
+    @SerializedName("source") val source: String? = null,
+    @SerializedName("created_at") val createdAt: String? = null
 )
 
 data class RouterBackup(
@@ -63,9 +62,11 @@ data class IPPool(
 )
 
 data class TrafficStat(
-    @SerializedName("timestamp") val timestamp: String,
+    @SerializedName("router_id") val routerId: String? = null,
+    @SerializedName("hour") val hour: String,
     @SerializedName("bytes_in") val bytesIn: Long,
-    @SerializedName("bytes_out") val bytesOut: Long
+    @SerializedName("bytes_out") val bytesOut: Long,
+    @SerializedName("total_bytes") val totalBytes: Long? = null
 )
 
 data class GeneratePdfRequest(
@@ -77,4 +78,42 @@ data class GeneratePdfRequest(
 data class VoucherInfo(
     @SerializedName("username") val username: String,
     @SerializedName("password") val password: String
+)
+
+data class RouterInterface(
+    @SerializedName("id") val id: String,
+    @SerializedName("name") val name: String,
+    @SerializedName("type") val type: String,
+    @SerializedName("mtu") val mtu: String?,
+    @SerializedName("mac_address") val macAddress: String?,
+    @SerializedName("running") val running: Boolean,
+    @SerializedName("disabled") val disabled: Boolean,
+    @SerializedName("comment") val comment: String?
+)
+
+data class RouterHealth(
+    @SerializedName("name") val name: String,
+    @SerializedName("value") val value: String,
+    @SerializedName("type") val type: String
+)
+
+data class RouterScript(
+    @SerializedName("id") val id: String,
+    @SerializedName("name") val name: String,
+    @SerializedName("owner") val owner: String,
+    @SerializedName("last_started") val lastStarted: String?,
+    @SerializedName("run_count") val runCount: String?,
+    @SerializedName("source") val source: String?
+)
+
+data class RouterJob(
+    @SerializedName("id") val id: String,
+    @SerializedName("name") val name: String,
+    @SerializedName("start_date") val startDate: String,
+    @SerializedName("start_time") val startTime: String,
+    @SerializedName("interval") val interval: String,
+    @SerializedName("on_event") val onEvent: String,
+    @SerializedName("next_run") val nextRun: String?,
+    @SerializedName("owner") val owner: String,
+    @SerializedName("disabled") val disabled: Boolean
 )

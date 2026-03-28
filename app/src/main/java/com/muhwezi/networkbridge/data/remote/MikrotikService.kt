@@ -4,8 +4,10 @@ import com.muhwezi.networkbridge.data.model.*
 import okhttp3.ResponseBody
 import retrofit2.Response
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.POST
+import retrofit2.http.PUT
 import retrofit2.http.Path
 import retrofit2.http.Query
 
@@ -16,8 +18,20 @@ interface MikrotikService {
     @POST("mikrotik/hotspot/plans")
     suspend fun createHotspotPlan(@Body request: CreateHotspotPlanRequest): Response<String> // UUID
 
+    @GET("mikrotik/hotspot/plans")
+    suspend fun getAllHotspotPlans(): Response<List<HotspotPlan>>
+
     @GET("routers/{id}/hotspot/plans")
     suspend fun getHotspotPlans(@Path("id") routerId: String): Response<List<HotspotPlan>>
+
+    @GET("plans/{id}")
+    suspend fun getHotspotPlan(@Path("id") planId: String): Response<HotspotPlan>
+
+    @PUT("plans/{id}")
+    suspend fun updateHotspotPlan(@Path("id") planId: String, @Body request: CreateHotspotPlanRequest): Response<HotspotPlan>
+
+    @DELETE("plans/{id}")
+    suspend fun deleteHotspotPlan(@Path("id") planId: String): Response<Unit>
 
     @POST("routers/{id}/hotspot/plans/sync")
     suspend fun syncHotspotPlans(@Path("id") routerId: String): Response<Unit>
@@ -51,4 +65,11 @@ interface MikrotikService {
 
     @GET("routers/{id}/pppoe/plans")
     suspend fun getPPPoEPlans(@Path("id") routerId: String): Response<List<PPPoEPlan>>
+
+    @GET("routers/{id}/ppp/active")
+    suspend fun getActivePPPoESessions(@Path("id") routerId: String): Response<List<ActivePPPoESession>>
+
+    @GET("routers/{id}/pppoe/profiles")
+    suspend fun getPPPoEProfiles(@Path("id") routerId: String): Response<List<PPPoEProfile>>
 }
+

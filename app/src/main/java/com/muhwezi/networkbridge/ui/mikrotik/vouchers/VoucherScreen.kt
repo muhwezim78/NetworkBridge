@@ -19,6 +19,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.FileProvider
 import android.content.Intent
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.muhwezi.networkbridge.data.model.HotspotPlan
 import com.muhwezi.networkbridge.data.model.VoucherResponse
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -146,6 +147,7 @@ fun VoucherScreen(
     if (uiState.showGenerateDialog) {
         GenerateVouchersDialog(
             planId = uiState.planId,
+            plans = uiState.plans,
             count = uiState.count,
             passwordMode = uiState.passwordMode,
             length = uiState.length,
@@ -185,6 +187,7 @@ fun VoucherCard(voucher: VoucherResponse) {
 @Composable
 fun GenerateVouchersDialog(
     planId: String,
+    plans: List<HotspotPlan>,
     count: String,
     passwordMode: String,
     length: String,
@@ -196,6 +199,7 @@ fun GenerateVouchersDialog(
     onGenerate: () -> Unit
 ) {
     var expandedPasswordMode by remember { mutableStateOf(false) }
+    var expandedPlan by remember { mutableStateOf(false) }
     val passwordModes = listOf("random", "same_as_username", "blank")
 
     Dialog(onDismissRequest = onDismiss) {
@@ -208,13 +212,35 @@ fun GenerateVouchersDialog(
                 )
                 Spacer(modifier = Modifier.height(16.dp))
 
-                OutlinedTextField(
-                    value = planId,
-                    onValueChange = onPlanIdChange,
-                    label = { Text("Plan ID *") },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
-                )
+                ExposedDropdownMenuBox(
+                    expanded = expandedPlan,
+                    onExpandedChange = { expandedPlan = !expandedPlan }
+                ) {
+                    OutlinedTextField(
+                        value = plans.find { it.id == planId }?.name ?: planId,
+                        onValueChange = {},
+                        readOnly = true,
+                        label = { Text("Plan *") },
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedPlan) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .menuAnchor()
+                    )
+                    ExposedDropdownMenu(
+                        expanded = expandedPlan,
+                        onDismissRequest = { expandedPlan = false }
+                    ) {
+                        plans.forEach { plan ->
+                            DropdownMenuItem(
+                                text = { Text("${plan.name} (${plan.price})") },
+                                onClick = {
+                                    onPlanIdChange(plan.id)
+                                    expandedPlan = false
+                                }
+                            )
+                        }
+                    }
+                }
 
                 Spacer(modifier = Modifier.height(8.dp))
 

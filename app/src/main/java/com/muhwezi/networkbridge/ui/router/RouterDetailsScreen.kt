@@ -243,7 +243,10 @@ fun LogsList(logs: List<com.muhwezi.networkbridge.data.model.RouterLog>, isLoadi
         Column(modifier = Modifier.fillMaxWidth()) {
             logs.forEach { log ->
                 Column(modifier = Modifier.padding(8.dp)) {
-                    Text(text = "${log.timestamp} [${log.severity}] ${log.topic}", style = MaterialTheme.typography.labelSmall)
+                    Text(
+                        text = "${log.createdAt?.substringBefore("T") ?: ""} [${log.level ?: "INFO"}] ${log.source ?: ""}",
+                        style = MaterialTheme.typography.labelSmall
+                    )
                     Text(text = log.message ?: "", style = MaterialTheme.typography.bodySmall)
                     Divider(modifier = Modifier.padding(top = 4.dp))
                 }

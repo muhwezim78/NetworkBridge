@@ -107,4 +107,11 @@ class MikrotikRepository @Inject constructor(
             if (response.isSuccessful && response.body() != null) Result.success(response.body()!!) else Result.failure(Exception("Error: ${response.code()}"))
         } catch (e: Exception) { Result.failure(e) }
     }
+
+    suspend fun getPPPoEProfiles(routerId: String): Result<List<PPPoEProfile>> {
+        return try {
+            val response = mikrotikService.getPPPoEProfiles(routerId)
+            if (response.isSuccessful && response.body() != null) Result.success(response.body()!!) else Result.failure(Exception("Error: ${response.code()}"))
+        } catch (e: Exception) { Result.failure(e) }
+    }
 }

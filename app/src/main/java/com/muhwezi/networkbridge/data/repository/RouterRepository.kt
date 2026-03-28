@@ -43,6 +43,7 @@ class RouterRepository @Inject constructor(
             } else {
                 val errorMessage = when (response.code()) {
                     409 -> "Router already exists"
+                    402, 403 -> "Subscription limit reached"
                     else -> "Failed to create router: ${response.code()}"
                 }
                 Result.failure(Exception(errorMessage))
@@ -68,42 +69,130 @@ class RouterRepository @Inject constructor(
     suspend fun getRouterLogs(routerId: String): Result<List<RouterLog>> {
         return try {
             val response = routerService.getRouterLogs(routerId)
-            if (response.isSuccessful && response.body() != null) Result.success(response.body()!!) else Result.failure(Exception("Error: ${response.code()}"))
-        } catch (e: Exception) { Result.failure(e) }
+            if (response.isSuccessful) {
+                Result.success(response.body() ?: emptyList())
+            } else {
+                Result.failure(Exception(response.message()))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
     }
 
     suspend fun getRouterBackups(routerId: String): Result<List<RouterBackup>> {
         return try {
             val response = routerService.getRouterBackups(routerId)
-            if (response.isSuccessful && response.body() != null) Result.success(response.body()!!) else Result.failure(Exception("Error: ${response.code()}"))
-        } catch (e: Exception) { Result.failure(e) }
+            if (response.isSuccessful) {
+                Result.success(response.body() ?: emptyList())
+            } else {
+                Result.failure(Exception(response.message()))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun createBackup(routerId: String): Result<Unit> {
+        return try {
+            val response = routerService.createBackup(routerId)
+            if (response.isSuccessful) {
+                Result.success(Unit)
+            } else {
+                Result.failure(Exception(response.message()))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
     }
 
     suspend fun getIPPools(routerId: String): Result<List<IPPool>> {
         return try {
             val response = routerService.getIPPools(routerId)
-            if (response.isSuccessful && response.body() != null) Result.success(response.body()!!) else Result.failure(Exception("Error: ${response.code()}"))
-        } catch (e: Exception) { Result.failure(e) }
+            if (response.isSuccessful) {
+                Result.success(response.body() ?: emptyList())
+            } else {
+                Result.failure(Exception(response.message()))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
     }
 
     suspend fun getTrafficStats(routerId: String): Result<List<TrafficStat>> {
         return try {
             val response = routerService.getTrafficStats(routerId)
-            if (response.isSuccessful && response.body() != null) Result.success(response.body()!!) else Result.failure(Exception("Error: ${response.code()}"))
-        } catch (e: Exception) { Result.failure(e) }
+            if (response.isSuccessful) {
+                Result.success(response.body() ?: emptyList())
+            } else {
+                Result.failure(Exception(response.message()))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
     }
 
     suspend fun setupTrafficFlow(routerId: String): Result<Unit> {
         return try {
             val response = routerService.setupTrafficFlow(routerId)
-            if (response.isSuccessful) Result.success(Unit) else Result.failure(Exception("Error: ${response.code()}"))
-        } catch (e: Exception) { Result.failure(e) }
+            if (response.isSuccessful) {
+                Result.success(Unit)
+            } else {
+                Result.failure(Exception(response.message()))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
     }
 
     suspend fun setupRemoteLogging(routerId: String): Result<Unit> {
         return try {
             val response = routerService.setupRemoteLogging(routerId)
-            if (response.isSuccessful) Result.success(Unit) else Result.failure(Exception("Error: ${response.code()}"))
-        } catch (e: Exception) { Result.failure(e) }
+            if (response.isSuccessful) {
+                Result.success(Unit)
+            } else {
+                Result.failure(Exception(response.message()))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun rebootRouter(routerId: String): Result<Unit> {
+        return try {
+            val response = routerService.rebootRouter(routerId)
+            if (response.isSuccessful) {
+                Result.success(Unit)
+            } else {
+                Result.failure(Exception(response.message()))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun shutdownRouter(routerId: String): Result<Unit> {
+        return try {
+            val response = routerService.shutdownRouter(routerId)
+            if (response.isSuccessful) {
+                Result.success(Unit)
+            } else {
+                Result.failure(Exception(response.message()))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun getHealth(routerId: String): Result<List<RouterHealth>> {
+        return try {
+            val response = routerService.getHealth(routerId)
+            if (response.isSuccessful) {
+                Result.success(response.body() ?: emptyList())
+            } else {
+                Result.failure(Exception(response.message()))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
     }
 }

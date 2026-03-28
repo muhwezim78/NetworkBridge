@@ -3,7 +3,7 @@ package com.muhwezi.networkbridge.ui.subscription
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.muhwezi.networkbridge.data.local.TokenManager
-import com.muhwezi.networkbridge.data.model.SubscriptionStatus
+import com.muhwezi.networkbridge.data.model.*
 import com.muhwezi.networkbridge.data.repository.AuthRepository
 import com.muhwezi.networkbridge.data.repository.SubscriptionRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -136,6 +136,43 @@ class SubscriptionViewModel @Inject constructor(
         }
     }
 
+    fun initiateSubscription(phoneNumber: String) {
+        if (_uiState.value.packageType.isBlank()) {
+            _uiState.value = _uiState.value.copy(error = "Please select a package")
+            return
+        }
+        if (phoneNumber.isBlank()) {
+            _uiState.value = _uiState.value.copy(error = "Please enter phone number")
+            return
+        }
+
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isLoading = true, error = null)
+            val result = subscriptionRepository.initiateSubscription(_uiState.value.packageType, phoneNumber)
+            
+            if (result.isSuccess) {
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    successMessage = result.getOrNull()?.message ?: "Payment initiated",
+                    showPaymentDialog = false
+                )
+            } else {
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    error = result.exceptionOrNull()?.message ?: "Failed to initiate payment"
+                )
+            }
+        }
+    }
+
+    fun showPaymentDialog() {
+        _uiState.value = _uiState.value.copy(showPaymentDialog = true)
+    }
+
+    fun hidePaymentDialog() {
+        _uiState.value = _uiState.value.copy(showPaymentDialog = false)
+    }
+
     fun clearMessages() {
         _uiState.value = _uiState.value.copy(error = null, successMessage = null)
     }
@@ -150,5 +187,6 @@ data class SubscriptionUiState(
     val isAdmin: Boolean = false,
     val packageType: String = "",
     val duration: String = "",
-    val generatedToken: String? = null
+    val generatedToken: String? = null,
+    val showPaymentDialog: Boolean = false
 )

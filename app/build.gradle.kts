@@ -23,7 +23,7 @@ android {
         }
         
         // Add BuildConfig fields
-        buildConfigField("String", "API_BASE_URL", "\"https://519557d6ebe9.ngrok-free.app/\"")
+        buildConfigField("String", "API_BASE_URL", "\"https://quicknetwifi.org/terraconnect/\"")
     }
 
     buildTypes {

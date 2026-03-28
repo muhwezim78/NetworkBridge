@@ -18,6 +18,19 @@ class PPPoEUsersViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
+    init {
+        loadProfiles()
+    }
+
+    private fun loadProfiles() {
+        viewModelScope.launch {
+            val result = mikrotikRepository.getPPPoEProfiles(routerId)
+            if (result.isSuccess) {
+                _uiState.value = _uiState.value.copy(profiles = result.getOrDefault(emptyList()))
+            }
+        }
+    }
+
     private val routerId: String = checkNotNull(savedStateHandle["routerId"])
 
     private val _uiState = MutableStateFlow(PPPoEUsersUiState())
@@ -92,6 +105,7 @@ class PPPoEUsersViewModel @Inject constructor(
 }
 
 data class PPPoEUsersUiState(
+    val profiles: List<com.muhwezi.networkbridge.data.model.PPPoEProfile> = emptyList(),
     val isLoading: Boolean = false,
     val error: String? = null,
     val successMessage: String? = null,

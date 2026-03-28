@@ -47,6 +47,19 @@ sealed class WebSocketEvent {
         @SerializedName("voucher_distribution") val voucherDistribution: List<VoucherDistribution>,
         @SerializedName("timestamp") val timestamp: String
     ) : WebSocketEvent()
+
+    data class ActiveUserUpdate(
+        @SerializedName("type") override val type: String = "ActiveUserUpdate",
+        @SerializedName("router_id") val routerId: String,
+        @SerializedName("active_users") val activeUsers: List<ActiveUserInfo>
+    ) : WebSocketEvent()
+
+    data class TrafficUpdate(
+        @SerializedName("type") override val type: String = "TrafficUpdate",
+        @SerializedName("router_id") val routerId: String,
+        @SerializedName("bytes_in") val bytesIn: Long,
+        @SerializedName("bytes_out") val bytesOut: Long
+    ) : WebSocketEvent()
 }
 
 data class ChartData(
@@ -58,4 +71,13 @@ data class VoucherDistribution(
     @SerializedName("name") val name: String,
     @SerializedName("value") val value: Long,
     @SerializedName("color") val color: String
+)
+
+data class ActiveUserInfo(
+    @SerializedName("name") val name: String? = null,
+    @SerializedName("address") val address: String? = null,
+    @SerializedName("mac_address") val macAddress: String? = null,
+    @SerializedName("uptime") val uptime: String? = null,
+    @SerializedName("bytes_in") val bytesIn: String? = null,
+    @SerializedName("bytes_out") val bytesOut: String? = null
 )

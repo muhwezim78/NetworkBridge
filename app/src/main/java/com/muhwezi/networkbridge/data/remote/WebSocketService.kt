@@ -34,7 +34,7 @@ class WebSocketService @Inject constructor(
         isConnecting = true
 
         scope.launch {
-            val token = tokenManager.token.first()
+            val token = tokenManager.accessToken.first()
             if (token == null) {
                 isConnecting = false
                 return@launch
@@ -67,6 +67,8 @@ class WebSocketService @Inject constructor(
                     "voucher_activated" -> gson.fromJson(text, WebSocketEvent.VoucherActivated::class.java)
                     "income_recorded" -> gson.fromJson(text, WebSocketEvent.IncomeRecorded::class.java)
                     "dashboard_stats" -> gson.fromJson(text, WebSocketEvent.DashboardStats::class.java)
+                    "ActiveUserUpdate" -> gson.fromJson(text, WebSocketEvent.ActiveUserUpdate::class.java)
+                    "TrafficUpdate" -> gson.fromJson(text, WebSocketEvent.TrafficUpdate::class.java)
                     else -> null
                 }
 

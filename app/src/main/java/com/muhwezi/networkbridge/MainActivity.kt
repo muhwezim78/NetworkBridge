@@ -29,19 +29,27 @@ import com.muhwezi.networkbridge.ui.mikrotik.plans.PPPoEPlansScreen
 import com.muhwezi.networkbridge.ui.admin.firewall.GlobalFirewallScreen
 import com.muhwezi.networkbridge.ui.router.TerminalScreen
 import com.muhwezi.networkbridge.ui.mikrotik.users.PPPoEUsersScreen
+import com.muhwezi.networkbridge.ui.billing.BillingScreen
+import com.muhwezi.networkbridge.ui.template.TemplateScreen
 import com.muhwezi.networkbridge.data.local.TokenManager
+import com.muhwezi.networkbridge.data.local.SessionEvent
+import com.muhwezi.networkbridge.data.local.SessionManager
 import androidx.compose.runtime.LaunchedEffect
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
+    @Inject lateinit var sessionManager: SessionManager
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         
         // Check if token exists synchronously to determine start destination
         val tokenManager = TokenManager(applicationContext)
-        val hasToken = runBlocking { tokenManager.token.first() } != null
+        val hasToken = runBlocking { tokenManager.accessToken.first() } != null
         val startDest = if (hasToken) "dashboard" else "login"
         
         setContent {
@@ -51,6 +59,22 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
                     val navController = rememberNavController()
+
+                    // Observe session expiry events globally — redirect to login
+                    LaunchedEffect(Unit) {
+                        sessionManager.sessionEvents.collect { event ->
+                            when (event) {
+                                is SessionEvent.Expired -> {
+                                    navController.navigate("login") {
+                                        // Clear entire back stack so all ViewModels
+                                        // with stale data are torn down
+                                        popUpTo(0) { inclusive = true }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
                     NavHost(navController = navController, startDestination = startDest) {
                         // Authentication - Login
                         composable("login") {
@@ -89,14 +113,17 @@ class MainActivity : ComponentActivity() {
                                 },
                                 onNavigateToSubscription = { navController.navigate("subscription") },
                                 onNavigateToUserManagement = { navController.navigate("user_management") },
-                                onNavigateToAccounting = { navController.navigate("accounting") }
+                                onNavigateToAccounting = { navController.navigate("accounting") },
+                                onNavigateToBilling = { navController.navigate("billing") },
+                                onNavigateToTemplates = { navController.navigate("templates") }
                             )
                         }
 
                         // Router Management
                         composable("create_router") {
                             CreateRouterScreen(
-                                onNavigateBack = { navController.popBackStack() }
+                                onNavigateBack = { navController.popBackStack() },
+                                onNavigateToSubscription = { navController.navigate("subscription") }
                             )
                         }
 
@@ -191,6 +218,20 @@ class MainActivity : ComponentActivity() {
                         // Accounting & Dashboard
                         composable("accounting") {
                             AccountingScreen(
+                                onNavigateBack = { navController.popBackStack() }
+                            )
+                        }
+
+                        // Billing & Wallet
+                        composable("billing") {
+                            BillingScreen(
+                                onNavigateBack = { navController.popBackStack() }
+                            )
+                        }
+
+                        // Templates
+                        composable("templates") {
+                            TemplateScreen(
                                 onNavigateBack = { navController.popBackStack() }
                             )
                         }

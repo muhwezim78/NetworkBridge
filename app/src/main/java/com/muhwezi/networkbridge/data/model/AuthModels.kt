@@ -8,7 +8,8 @@ data class LoginRequest(
 )
 
 data class LoginResponse(
-    @SerializedName("token") val token: String,
+    @SerializedName("access_token") val accessToken: String,
+    @SerializedName("refresh_token") val refreshToken: String,
     @SerializedName("user_id") val userId: String? = null // Made optional as per new spec it might just be token, but keeping for backward compat if needed or if spec implies it
 )
 

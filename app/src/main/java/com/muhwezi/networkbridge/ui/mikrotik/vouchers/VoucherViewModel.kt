@@ -25,6 +25,7 @@ class VoucherViewModel @Inject constructor(
 
     init {
         loadVouchers()
+        loadPlans()
     }
 
     fun loadVouchers() {
@@ -41,6 +42,15 @@ class VoucherViewModel @Inject constructor(
                     isLoading = false,
                     error = result.exceptionOrNull()?.message ?: "Failed to load vouchers"
                 )
+            }
+        }
+    }
+
+    private fun loadPlans() {
+        viewModelScope.launch {
+            val result = mikrotikRepository.getHotspotPlans(routerId)
+            if (result.isSuccess) {
+                _uiState.value = _uiState.value.copy(plans = result.getOrDefault(emptyList()))
             }
         }
     }
@@ -162,6 +172,7 @@ class VoucherViewModel @Inject constructor(
 
 data class VoucherUiState(
     val vouchers: List<VoucherResponse> = emptyList(),
+    val plans: List<HotspotPlan> = emptyList(),
     val isLoading: Boolean = false,
     val error: String? = null,
     val successMessage: String? = null,

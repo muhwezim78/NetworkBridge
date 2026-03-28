@@ -11,6 +11,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import com.muhwezi.networkbridge.data.model.WebSocketEvent
 import com.muhwezi.networkbridge.data.repository.WebSocketRepository
+import com.muhwezi.networkbridge.data.repository.AuthRepository
+import com.muhwezi.networkbridge.data.local.SessionManager
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.collect
 import javax.inject.Inject
@@ -19,7 +21,9 @@ import javax.inject.Inject
 class DashboardViewModel @Inject constructor(
     private val routerRepository: RouterRepository,
     private val mikrotikRepository: MikrotikRepository,
-    private val webSocketRepository: WebSocketRepository
+    private val webSocketRepository: WebSocketRepository,
+    private val authRepository: AuthRepository,
+    private val sessionManager: SessionManager
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(DashboardUiState())
@@ -95,6 +99,13 @@ class DashboardViewModel @Inject constructor(
                     error = result.exceptionOrNull()?.message ?: "Command failed"
                 )
             }
+        }
+    }
+
+    fun logout() {
+        viewModelScope.launch {
+            authRepository.logout()
+            sessionManager.onSessionExpired()
         }
     }
 }

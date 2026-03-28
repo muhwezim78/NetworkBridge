@@ -36,7 +36,7 @@ class GlobalFirewallViewModel @Inject constructor(
             } else {
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
-                    error = result.exceptionOrNull()?.message ?: "Failed to load addresses"
+                    error = result.exceptionOrNull()?.message ?: "Failed to load rules"
                 )
             }
         }
@@ -49,37 +49,61 @@ class GlobalFirewallViewModel @Inject constructor(
     fun hideAddDialog() {
         _uiState.value = _uiState.value.copy(
             showAddDialog = false,
-            listName = "",
-            address = "",
+            action = "drop",
+            chain = "forward",
+            srcAddress = "",
+            dstAddress = "",
+            protocol = "",
+            dstPort = "",
             comment = ""
         )
     }
 
-    fun onListNameChange(name: String) {
-        _uiState.value = _uiState.value.copy(listName = name)
+    fun onActionChange(action: String) {
+        _uiState.value = _uiState.value.copy(action = action)
     }
 
-    fun onAddressChange(address: String) {
-        _uiState.value = _uiState.value.copy(address = address)
+    fun onChainChange(chain: String) {
+        _uiState.value = _uiState.value.copy(chain = chain)
+    }
+
+    fun onSrcAddressChange(srcAddress: String) {
+        _uiState.value = _uiState.value.copy(srcAddress = srcAddress)
+    }
+
+    fun onDstAddressChange(dstAddress: String) {
+        _uiState.value = _uiState.value.copy(dstAddress = dstAddress)
+    }
+
+    fun onProtocolChange(protocol: String) {
+        _uiState.value = _uiState.value.copy(protocol = protocol)
+    }
+
+    fun onDstPortChange(dstPort: String) {
+        _uiState.value = _uiState.value.copy(dstPort = dstPort)
     }
 
     fun onCommentChange(comment: String) {
         _uiState.value = _uiState.value.copy(comment = comment)
     }
 
-    fun addAddress() {
-        if (_uiState.value.listName.isBlank() || _uiState.value.address.isBlank()) {
-            _uiState.value = _uiState.value.copy(error = "List name and address are required")
+    fun addRule() {
+        if (_uiState.value.chain.isBlank()) {
+            _uiState.value = _uiState.value.copy(error = "Chain is required")
             return
         }
 
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true, error = null)
-            
+
             val request = AddGlobalFirewallRequest(
-                listName = _uiState.value.listName,
-                address = _uiState.value.address,
-                comment = _uiState.value.comment
+                action = _uiState.value.action,
+                chain = _uiState.value.chain,
+                srcAddress = _uiState.value.srcAddress.ifBlank { null },
+                dstAddress = _uiState.value.dstAddress.ifBlank { null },
+                protocol = _uiState.value.protocol.ifBlank { null },
+                dstPort = _uiState.value.dstPort.ifBlank { null },
+                comment = _uiState.value.comment.ifBlank { null }
             )
 
             val result = firewallRepository.addGlobalFirewallAddress(request)
@@ -87,16 +111,20 @@ class GlobalFirewallViewModel @Inject constructor(
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
                     showAddDialog = false,
-                    successMessage = "Address added successfully",
-                    listName = "",
-                    address = "",
+                    successMessage = "Rule added successfully",
+                    action = "drop",
+                    chain = "forward",
+                    srcAddress = "",
+                    dstAddress = "",
+                    protocol = "",
+                    dstPort = "",
                     comment = ""
                 )
                 loadAddresses()
             } else {
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
-                    error = result.exceptionOrNull()?.message ?: "Failed to add address"
+                    error = result.exceptionOrNull()?.message ?: "Failed to add rule"
                 )
             }
         }
@@ -113,7 +141,11 @@ data class GlobalFirewallUiState(
     val error: String? = null,
     val successMessage: String? = null,
     val showAddDialog: Boolean = false,
-    val listName: String = "",
-    val address: String = "",
+    val action: String = "drop",
+    val chain: String = "forward",
+    val srcAddress: String = "",
+    val dstAddress: String = "",
+    val protocol: String = "",
+    val dstPort: String = "",
     val comment: String = ""
 )

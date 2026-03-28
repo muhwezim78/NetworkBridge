@@ -42,4 +42,28 @@ interface RouterService {
 
     @POST("routers/{id}/logs/setup")
     suspend fun setupRemoteLogging(@Path("id") routerId: String): Response<Unit>
+
+    @POST("routers/{id}/reboot")
+    suspend fun rebootRouter(@Path("id") routerId: String): Response<Map<String, String>>
+
+    @POST("routers/{id}/shutdown")
+    suspend fun shutdownRouter(@Path("id") routerId: String): Response<Map<String, String>>
+
+    @GET("routers/{id}/interfaces")
+    suspend fun getInterfaces(@Path("id") routerId: String): Response<List<RouterInterface>>
+
+    @GET("routers/{id}/health")
+    suspend fun getHealth(@Path("id") routerId: String): Response<List<RouterHealth>>
+
+    @GET("routers/{id}/scripts")
+    suspend fun getScripts(@Path("id") routerId: String): Response<List<RouterScript>>
+
+    @GET("routers/{id}/scheduler")
+    suspend fun getScheduler(@Path("id") routerId: String): Response<List<RouterJob>>
+
+    @POST("routers/{id}/backups")
+    suspend fun createBackup(@Path("id") routerId: String): Response<Unit>
+
+    @POST("routers/{id}/walled-garden")
+    suspend fun configureWalledGarden(@Path("id") routerId: String): Response<Map<String, String>>
 }

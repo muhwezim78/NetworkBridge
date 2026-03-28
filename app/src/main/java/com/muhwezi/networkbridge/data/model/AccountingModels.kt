@@ -7,9 +7,10 @@ data class IncomeReport(
     @SerializedName("amount") val amount: Double,
     @SerializedName("count") val count: Int
 )
+
 data class DashboardStats(
-    @SerializedName("total_users") val totalUsers: Int,
-    @SerializedName("active_routers") val activeRouters: Int,
-    @SerializedName("total_revenue") val totalRevenue: Double,
-    @SerializedName("active_subscriptions") val activeSubscriptions: Int
+    @SerializedName("total_routers") val totalRouters: Int,
+    @SerializedName("connected_routers") val connectedRouters: Int,
+    @SerializedName("total_active_users") val totalActiveUsers: Int,
+    @SerializedName("total_revenue_today") val totalRevenueToday: Double
 )

@@ -103,6 +103,16 @@ fun SubscriptionScreen(
                         enabled = !uiState.isLoading
                     )
 
+                    // Purchase Subscription (Mobile Money)
+                    PurchaseSection(
+                        packageType = uiState.packageType,
+                        phoneNumber = "",
+                        onPackageChange = viewModel::onPackageTypeChange,
+                        onPhoneChange = { },
+                        onPay = { viewModel.initiateSubscription(it) },
+                        enabled = !uiState.isLoading
+                    )
+
                     // Admin Token Generation
                     if (uiState.isAdmin) {
                         GenerateTokenSection(
@@ -289,6 +299,66 @@ fun GenerateTokenSection(
                         )
                     }
                 }
+            }
+        }
+    }
+}
+
+@Composable
+fun PurchaseSection(
+    packageType: String,
+    phoneNumber: String,
+    onPackageChange: (String) -> Unit,
+    onPhoneChange: (String) -> Unit,
+    onPay: (String) -> Unit,
+    enabled: Boolean
+) {
+    var localPhone by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(phoneNumber) }
+    
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                text = "Purchase Subscription (Mobile Money)",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+            
+            OutlinedTextField(
+                value = packageType,
+                onValueChange = onPackageChange,
+                label = { Text("Package (e.g., standard_monthly)") },
+                modifier = Modifier.fillMaxWidth(),
+                enabled = enabled,
+                singleLine = true
+            )
+            
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            OutlinedTextField(
+                value = localPhone,
+                onValueChange = { 
+                    localPhone = it
+                    onPhoneChange(it)
+                },
+                label = { Text("Phone Number") },
+                modifier = Modifier.fillMaxWidth(),
+                enabled = enabled,
+                singleLine = true,
+                keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Phone)
+            )
+            
+            Spacer(modifier = Modifier.height(12.dp))
+            
+            Button(
+                onClick = { onPay(localPhone) },
+                modifier = Modifier.fillMaxWidth(),
+                enabled = enabled && packageType.isNotBlank() && localPhone.isNotBlank()
+            ) {
+                Text("Pay with Mobile Money")
             }
         }
     }

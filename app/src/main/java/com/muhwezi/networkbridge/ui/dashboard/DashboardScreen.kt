@@ -28,6 +28,8 @@ fun DashboardScreen(
     onNavigateToSubscription: () -> Unit = {},
     onNavigateToUserManagement: () -> Unit = {},
     onNavigateToAccounting: () -> Unit = {},
+    onNavigateToBilling: () -> Unit = {},
+    onNavigateToTemplates: () -> Unit = {},
     viewModel: DashboardViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -50,6 +52,18 @@ fun DashboardScreen(
                     onNavigateToAccounting = {
                         scope.launch { drawerState.close() }
                         onNavigateToAccounting()
+                    },
+                    onNavigateToBilling = {
+                        scope.launch { drawerState.close() }
+                        onNavigateToBilling()
+                    },
+                    onNavigateToTemplates = {
+                        scope.launch { drawerState.close() }
+                        onNavigateToTemplates()
+                    },
+                    onLogout = {
+                        scope.launch { drawerState.close() }
+                        viewModel.logout()
                     }
                 )
             }
@@ -139,7 +153,10 @@ fun DashboardScreen(
 fun NavigationDrawerContent(
     onNavigateToSubscription: () -> Unit,
     onNavigateToUserManagement: () -> Unit,
-    onNavigateToAccounting: () -> Unit
+    onNavigateToAccounting: () -> Unit,
+    onNavigateToBilling: () -> Unit,
+    onNavigateToTemplates: () -> Unit,
+    onLogout: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -170,6 +187,28 @@ fun NavigationDrawerContent(
             icon = Icons.Default.AccountBox,
             label = "Accounting & Stats",
             onClick = onNavigateToAccounting
+        )
+
+        DrawerMenuItem(
+            icon = Icons.Default.ShoppingCart,
+            label = "Billing & Wallet",
+            onClick = onNavigateToBilling
+        )
+
+        DrawerMenuItem(
+            icon = Icons.Default.Edit,
+            label = "Templates",
+            onClick = onNavigateToTemplates
+        )
+
+        Spacer(modifier = Modifier.weight(1f))
+        Divider()
+        Spacer(modifier = Modifier.height(8.dp))
+
+        DrawerMenuItem(
+            icon = Icons.Default.ExitToApp,
+            label = "Logout",
+            onClick = onLogout
         )
     }
 }

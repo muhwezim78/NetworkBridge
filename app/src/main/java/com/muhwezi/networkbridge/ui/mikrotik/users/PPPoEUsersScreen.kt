@@ -12,6 +12,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.muhwezi.networkbridge.data.model.PPPoEProfile
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -77,6 +78,7 @@ fun PPPoEUsersScreen(
             username = uiState.username,
             password = uiState.password,
             profile = uiState.profile,
+            profiles = uiState.profiles,
             onUsernameChange = viewModel::onUsernameChange,
             onPasswordChange = viewModel::onPasswordChange,
             onProfileChange = viewModel::onProfileChange,
@@ -86,17 +88,21 @@ fun PPPoEUsersScreen(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddPPPoEUserDialog(
     username: String,
     password: String,
     profile: String,
+    profiles: List<PPPoEProfile>,
     onUsernameChange: (String) -> Unit,
     onPasswordChange: (String) -> Unit,
     onProfileChange: (String) -> Unit,
     onDismiss: () -> Unit,
     onAdd: () -> Unit
 ) {
+    var expanded by remember { mutableStateOf(false) }
+
     Dialog(onDismissRequest = onDismiss) {
         Card {
             Column(modifier = Modifier.padding(16.dp)) {
@@ -123,12 +129,35 @@ fun AddPPPoEUserDialog(
                 )
                 Spacer(modifier = Modifier.height(8.dp))
 
-                OutlinedTextField(
-                    value = profile,
-                    onValueChange = onProfileChange,
-                    label = { Text("Profile (e.g. default)") },
-                    modifier = Modifier.fillMaxWidth()
-                )
+                ExposedDropdownMenuBox(
+                    expanded = expanded,
+                    onExpandedChange = { expanded = !expanded }
+                ) {
+                    OutlinedTextField(
+                        value = profile,
+                        onValueChange = {},
+                        readOnly = true,
+                        label = { Text("Profile") },
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .menuAnchor()
+                    )
+                    ExposedDropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { expanded = false }
+                    ) {
+                        profiles.forEach { p ->
+                            DropdownMenuItem(
+                                text = { Text(p.name ?: "Unknown") },
+                                onClick = {
+                                    onProfileChange(p.name ?: "")
+                                    expanded = false
+                                }
+                            )
+                        }
+                    }
+                }
                 
                 Spacer(modifier = Modifier.height(16.dp))
 

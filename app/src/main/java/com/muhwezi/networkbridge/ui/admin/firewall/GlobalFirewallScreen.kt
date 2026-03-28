@@ -44,7 +44,7 @@ fun GlobalFirewallScreen(
         },
         floatingActionButton = {
             FloatingActionButton(onClick = viewModel::showAddDialog) {
-                Icon(Icons.Default.Add, "Add Address")
+                Icon(Icons.Default.Add, "Add Rule")
             }
         }
     ) { paddingValues ->
@@ -92,21 +92,21 @@ fun GlobalFirewallScreen(
                         }
                     }
 
-                    // Addresses List
+                    // Rules List
                     if (uiState.addresses.isEmpty()) {
                         Box(
                             modifier = Modifier.fillMaxSize(),
                             contentAlignment = Alignment.Center
                         ) {
-                            Text("No global firewall addresses found.")
+                            Text("No global firewall rules found.")
                         }
                     } else {
                         LazyColumn(
                             contentPadding = PaddingValues(16.dp),
                             verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            items(uiState.addresses) { address ->
-                                FirewallAddressCard(address)
+                            items(uiState.addresses) { rule ->
+                                FirewallRuleCard(rule)
                             }
                         }
                     }
@@ -116,21 +116,29 @@ fun GlobalFirewallScreen(
     }
 
     if (uiState.showAddDialog) {
-        AddFirewallAddressDialog(
-            listName = uiState.listName,
-            address = uiState.address,
+        AddFirewallRuleDialog(
+            action = uiState.action,
+            chain = uiState.chain,
+            srcAddress = uiState.srcAddress,
+            dstAddress = uiState.dstAddress,
+            protocol = uiState.protocol,
+            dstPort = uiState.dstPort,
             comment = uiState.comment,
-            onListNameChange = viewModel::onListNameChange,
-            onAddressChange = viewModel::onAddressChange,
+            onActionChange = viewModel::onActionChange,
+            onChainChange = viewModel::onChainChange,
+            onSrcAddressChange = viewModel::onSrcAddressChange,
+            onDstAddressChange = viewModel::onDstAddressChange,
+            onProtocolChange = viewModel::onProtocolChange,
+            onDstPortChange = viewModel::onDstPortChange,
             onCommentChange = viewModel::onCommentChange,
             onDismiss = viewModel::hideAddDialog,
-            onAdd = viewModel::addAddress
+            onAdd = viewModel::addRule
         )
     }
 }
 
 @Composable
-fun FirewallAddressCard(address: GlobalFirewallAddress) {
+fun FirewallRuleCard(rule: GlobalFirewallAddress) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
@@ -140,27 +148,45 @@ fun FirewallAddressCard(address: GlobalFirewallAddress) {
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
+                // Action chip
+                val actionColor = if (rule.action == "drop")
+                    MaterialTheme.colorScheme.error
+                else
+                    MaterialTheme.colorScheme.primary
                 Text(
-                    text = address.listName ?: "Unknown",
-                    style = MaterialTheme.typography.titleMedium,
+                    text = (rule.action ?: "unknown").uppercase(),
+                    style = MaterialTheme.typography.labelMedium,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary
+                    color = actionColor
                 )
                 Text(
-                    text = address.createdAt?.substringBefore("T") ?: "",
+                    text = "chain: ${rule.chain ?: "?"}",
                     style = MaterialTheme.typography.bodySmall
                 )
             }
             Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = address.address ?: "",
-                style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.Medium
-            )
-            if (!address.comment.isNullOrBlank()) {
+            if (!rule.srcAddress.isNullOrBlank()) {
+                Text(
+                    text = "Src: ${rule.srcAddress}",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
+            if (!rule.dstAddress.isNullOrBlank()) {
+                Text(
+                    text = "Dst: ${rule.dstAddress}",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
+            if (!rule.protocol.isNullOrBlank()) {
+                Text(
+                    text = "Proto: ${rule.protocol}" + if (!rule.dstPort.isNullOrBlank()) " :${rule.dstPort}" else "",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
+            if (!rule.comment.isNullOrBlank()) {
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = address.comment ?: "",
+                    text = rule.comment ?: "",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.secondary
                 )
@@ -169,13 +195,22 @@ fun FirewallAddressCard(address: GlobalFirewallAddress) {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddFirewallAddressDialog(
-    listName: String,
-    address: String,
+fun AddFirewallRuleDialog(
+    action: String,
+    chain: String,
+    srcAddress: String,
+    dstAddress: String,
+    protocol: String,
+    dstPort: String,
     comment: String,
-    onListNameChange: (String) -> Unit,
-    onAddressChange: (String) -> Unit,
+    onActionChange: (String) -> Unit,
+    onChainChange: (String) -> Unit,
+    onSrcAddressChange: (String) -> Unit,
+    onDstAddressChange: (String) -> Unit,
+    onProtocolChange: (String) -> Unit,
+    onDstPortChange: (String) -> Unit,
     onCommentChange: (String) -> Unit,
     onDismiss: () -> Unit,
     onAdd: () -> Unit
@@ -184,16 +219,34 @@ fun AddFirewallAddressDialog(
         Card {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(
-                    text = "Add Global Firewall Address",
+                    text = "Add Firewall Rule",
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold
                 )
                 Spacer(modifier = Modifier.height(16.dp))
 
+                // Action selector
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text("Action:", modifier = Modifier.width(60.dp))
+                    FilterChip(
+                        selected = action == "drop",
+                        onClick = { onActionChange("drop") },
+                        label = { Text("Drop") }
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    FilterChip(
+                        selected = action == "accept",
+                        onClick = { onActionChange("accept") },
+                        label = { Text("Accept") }
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
                 OutlinedTextField(
-                    value = listName,
-                    onValueChange = onListNameChange,
-                    label = { Text("List Name (e.g. blacklist) *") },
+                    value = chain,
+                    onValueChange = onChainChange,
+                    label = { Text("Chain *") },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true
                 )
@@ -201,12 +254,42 @@ fun AddFirewallAddressDialog(
                 Spacer(modifier = Modifier.height(8.dp))
 
                 OutlinedTextField(
-                    value = address,
-                    onValueChange = onAddressChange,
-                    label = { Text("Address/Domain *") },
+                    value = srcAddress,
+                    onValueChange = onSrcAddressChange,
+                    label = { Text("Source Address") },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true
                 )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                OutlinedTextField(
+                    value = dstAddress,
+                    onValueChange = onDstAddressChange,
+                    label = { Text("Destination Address") },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Row(modifier = Modifier.fillMaxWidth()) {
+                    OutlinedTextField(
+                        value = protocol,
+                        onValueChange = onProtocolChange,
+                        label = { Text("Protocol") },
+                        modifier = Modifier.weight(1f),
+                        singleLine = true
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    OutlinedTextField(
+                        value = dstPort,
+                        onValueChange = onDstPortChange,
+                        label = { Text("Dst Port") },
+                        modifier = Modifier.weight(1f),
+                        singleLine = true
+                    )
+                }
 
                 Spacer(modifier = Modifier.height(8.dp))
 
@@ -230,7 +313,7 @@ fun AddFirewallAddressDialog(
                     }
                     Spacer(modifier = Modifier.width(8.dp))
                     Button(onClick = onAdd) {
-                        Text("Add")
+                        Text("Add Rule")
                     }
                 }
             }
