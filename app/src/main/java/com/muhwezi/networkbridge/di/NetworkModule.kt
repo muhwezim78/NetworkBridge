@@ -12,6 +12,7 @@ import com.muhwezi.networkbridge.data.remote.RouterService
 import com.muhwezi.networkbridge.data.remote.SubscriptionService
 import com.muhwezi.networkbridge.data.remote.TemplateService
 import com.muhwezi.networkbridge.data.remote.UserService
+import com.muhwezi.networkbridge.data.remote.DeviceService
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -165,5 +166,29 @@ object NetworkModule {
     @Singleton
     fun provideAnalyticsService(retrofit: Retrofit): AnalyticsService {
         return retrofit.create(AnalyticsService::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideNotificationService(retrofit: Retrofit): com.muhwezi.networkbridge.data.remote.NotificationService {
+        return retrofit.create(com.muhwezi.networkbridge.data.remote.NotificationService::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideSupportService(retrofit: Retrofit): com.muhwezi.networkbridge.data.remote.SupportService {
+        return retrofit.create(com.muhwezi.networkbridge.data.remote.SupportService::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideVpnApiService(retrofit: Retrofit): com.muhwezi.networkbridge.data.remote.VpnApiService {
+        return retrofit.create(com.muhwezi.networkbridge.data.remote.VpnApiService::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideDeviceService(retrofit: Retrofit): DeviceService {
+        return retrofit.create(DeviceService::class.java)
     }
 }

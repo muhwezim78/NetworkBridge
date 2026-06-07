@@ -38,6 +38,7 @@ fun UserManagementScreen(
         topBar = {
             TopAppBar(
                 title = { Text("User Management") },
+                windowInsets = WindowInsets(0, 0, 0, 0),
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.Default.ArrowBack, "Back")
@@ -196,61 +197,72 @@ fun RoleDialog(
     var expanded by remember { mutableStateOf(false) }
     val roles = listOf("admin", "user")
 
-    Dialog(onDismissRequest = onDismiss) {
-        Card {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text(
-                    text = "Update Role",
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            Text(
+                text = "Update Role",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+
+            ExposedDropdownMenuBox(
+                expanded = expanded,
+                onExpandedChange = { expanded = !expanded }
+            ) {
+                OutlinedTextField(
+                    value = currentRole,
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text("Role") },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .menuAnchor()
                 )
-                Spacer(modifier = Modifier.height(16.dp))
-
-                ExposedDropdownMenuBox(
+                ExposedDropdownMenu(
                     expanded = expanded,
-                    onExpandedChange = { expanded = !expanded }
+                    onDismissRequest = { expanded = false }
                 ) {
-                    OutlinedTextField(
-                        value = currentRole,
-                        onValueChange = {},
-                        readOnly = true,
-                        label = { Text("Role") },
-                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .menuAnchor()
-                    )
-                    ExposedDropdownMenu(
-                        expanded = expanded,
-                        onDismissRequest = { expanded = false }
-                    ) {
-                        roles.forEach { role ->
-                            DropdownMenuItem(
-                                text = { Text(role) },
-                                onClick = {
-                                    onRoleChange(role)
-                                    expanded = false
-                                }
-                            )
-                        }
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End
-                ) {
-                    TextButton(onClick = onDismiss) {
-                        Text("Cancel")
-                    }
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Button(onClick = onConfirm) {
-                        Text("Update")
+                    roles.forEach { role ->
+                        DropdownMenuItem(
+                            text = { Text(role) },
+                            onClick = {
+                                onRoleChange(role)
+                                expanded = false
+                            }
+                        )
                     }
                 }
             }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                TextButton(onClick = onDismiss) {
+                    Text("Cancel")
+                }
+                Spacer(modifier = Modifier.width(8.dp))
+                Button(onClick = {
+                    onConfirm()
+                    onDismiss()
+                }) {
+                    Text("Update")
+                }
+            }
+            Spacer(modifier = Modifier.height(24.dp))
         }
     }
 }

@@ -8,52 +8,90 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import com.muhwezi.networkbridge.ui.theme.NetworkCoordinatorTheme
+import androidx.activity.enableEdgeToEdge
 import dagger.hilt.android.AndroidEntryPoint
 
-import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navArgument
-import com.muhwezi.networkbridge.ui.accounting.AccountingScreen
-import com.muhwezi.networkbridge.ui.admin.users.UserManagementScreen
 import com.muhwezi.networkbridge.ui.auth.LoginScreen
-import com.muhwezi.networkbridge.ui.dashboard.DashboardScreen
-import com.muhwezi.networkbridge.ui.mikrotik.plans.HotspotPlansScreen
-import com.muhwezi.networkbridge.ui.mikrotik.users.ActiveUsersScreen
-import com.muhwezi.networkbridge.ui.mikrotik.vouchers.VoucherScreen
-import com.muhwezi.networkbridge.ui.router.CreateRouterScreen
-import com.muhwezi.networkbridge.ui.router.RouterDetailsScreen
-import com.muhwezi.networkbridge.ui.subscription.SubscriptionScreen
-import com.muhwezi.networkbridge.ui.mikrotik.plans.PPPoEPlansScreen
-import com.muhwezi.networkbridge.ui.admin.firewall.GlobalFirewallScreen
-import com.muhwezi.networkbridge.ui.router.TerminalScreen
-import com.muhwezi.networkbridge.ui.mikrotik.users.PPPoEUsersScreen
-import com.muhwezi.networkbridge.ui.billing.BillingScreen
-import com.muhwezi.networkbridge.ui.template.TemplateScreen
+import com.muhwezi.networkbridge.ui.navigation.MainScaffold
 import com.muhwezi.networkbridge.data.local.TokenManager
 import com.muhwezi.networkbridge.data.local.SessionEvent
 import com.muhwezi.networkbridge.data.local.SessionManager
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
+
+import android.Manifest
+import android.os.Build
+import android.util.Log
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import com.google.firebase.messaging.FirebaseMessaging
+import com.muhwezi.networkbridge.data.remote.DeviceService
+import com.muhwezi.networkbridge.data.remote.FcmTokenRequest
+import com.muhwezi.networkbridge.service.AppFirebaseMessagingService
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
     @Inject lateinit var sessionManager: SessionManager
+    @Inject lateinit var themeManager: com.muhwezi.networkbridge.data.local.ThemeManager
+    @Inject lateinit var deviceService: DeviceService
+
+    private val notificationPermissionLauncher =
+        registerForActivityResult(
+            ActivityResultContracts.RequestPermission()
+        ) { granted ->
+            if (granted) {
+                Log.d("FCM", "Notification permission granted")
+            } else {
+                Log.d("FCM", "Notification permission denied")
+            }
+        }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         
         // Check if token exists synchronously to determine start destination
         val tokenManager = TokenManager(applicationContext)
         val hasToken = runBlocking { tokenManager.accessToken.first() } != null
-        val startDest = if (hasToken) "dashboard" else "login"
+        val startDest = if (hasToken) "main" else "login"
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            notificationPermissionLauncher.launch(
+                Manifest.permission.POST_NOTIFICATIONS
+            )
+        }
+
+        FirebaseMessaging.getInstance().token
+            .addOnCompleteListener { task ->
+                if (!task.isSuccessful) {
+                    Log.e("FCM", "Fetching token failed", task.exception)
+                    return@addOnCompleteListener
+                }
+                val token = task.result
+                Log.d("FCM", "FCM Token: $token")
+                // Register with backend (fire-and-forget)
+                CoroutineScope(Dispatchers.IO).launch {
+                    runCatching { deviceService.registerFcmToken(FcmTokenRequest(token)) }
+                        .onFailure { Log.w("FCM", "Token registration failed: ${it.message}") }
+                }
+            }
         
         setContent {
-            NetworkCoordinatorTheme {
+            val themeMode by themeManager.themeMode.collectAsState(initial = com.muhwezi.networkbridge.data.local.ThemeMode.SYSTEM)
+            
+            NetworkCoordinatorTheme(themeMode = themeMode) {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
@@ -75,12 +113,17 @@ class MainActivity : ComponentActivity() {
                         }
                     }
 
+                    // Check if launched from a notification tap
+                    val notificationDeepLink = intent?.getStringExtra(
+                        AppFirebaseMessagingService.EXTRA_NAVIGATE_TO
+                    )
+
                     NavHost(navController = navController, startDestination = startDest) {
                         // Authentication - Login
                         composable("login") {
                             LoginScreen(
                                 onLoginSuccess = {
-                                    navController.navigate("dashboard") {
+                                    navController.navigate("main") {
                                         popUpTo("login") { inclusive = true }
                                     }
                                 },
@@ -94,7 +137,7 @@ class MainActivity : ComponentActivity() {
                         composable("signup") {
                             com.muhwezi.networkbridge.ui.auth.SignupScreen(
                                 onSignupSuccess = {
-                                    navController.navigate("dashboard") {
+                                    navController.navigate("main") {
                                         popUpTo("signup") { inclusive = true }
                                     }
                                 },
@@ -104,155 +147,23 @@ class MainActivity : ComponentActivity() {
                             )
                         }
 
-                        // Dashboard
-                        composable("dashboard") {
-                            DashboardScreen(
-                                onNavigateToCreateRouter = { navController.navigate("create_router") },
-                                onNavigateToRouterDetails = { routerId -> 
-                                    navController.navigate("router_details/$routerId") 
-                                },
-                                onNavigateToSubscription = { navController.navigate("subscription") },
-                                onNavigateToUserManagement = { navController.navigate("user_management") },
-                                onNavigateToAccounting = { navController.navigate("accounting") },
-                                onNavigateToBilling = { navController.navigate("billing") },
-                                onNavigateToTemplates = { navController.navigate("templates") }
-                            )
-                        }
-
-                        // Router Management
-                        composable("create_router") {
-                            CreateRouterScreen(
-                                onNavigateBack = { navController.popBackStack() },
-                                onNavigateToSubscription = { navController.navigate("subscription") }
-                            )
-                        }
-
-                        composable(
-                            "router_details/{routerId}",
-                            arguments = listOf(navArgument("routerId") { type = NavType.StringType })
-                        ) {
-                            RouterDetailsScreen(
-                                onNavigateBack = { navController.popBackStack() },
-                                onNavigateToPlans = { routerId ->
-                                    navController.navigate("hotspot_plans/$routerId")
-                                },
-                                onNavigateToVouchers = { routerId ->
-                                    navController.navigate("vouchers/$routerId")
-                                },
-                                onNavigateToActiveUsers = { routerId ->
-                                    navController.navigate("active_users/$routerId")
-                                },
-                                onNavigateToPPPoEPlans = { routerId ->
-                                    navController.navigate("pppoe_plans/$routerId")
-                                },
-                                onNavigateToTerminal = { routerId ->
-                                    navController.navigate("terminal/$routerId")
-                                },
-                                onNavigateToPPPoEUsers = { routerId ->
-                                    navController.navigate("pppoe_users/$routerId")
+                        // Main app shell — contains bottom nav, drawer, and all authenticated screens
+                        composable("main") {
+                            // If launched from a push notification, navigate to notifications after load
+                            LaunchedEffect(notificationDeepLink) {
+                                if (notificationDeepLink == "notifications") {
+                                    navController.navigate("main") {
+                                        popUpTo("main") { inclusive = true }
+                                    }
                                 }
-                            )
-                        }
-
-                        // Subscription Management
-                        composable("subscription") {
-                            SubscriptionScreen(
-                                onNavigateBack = { navController.popBackStack() }
-                            )
-                        }
-
-                        // Mikrotik Features - Hotspot Plans
-                        composable(
-                            "hotspot_plans/{routerId}",
-                            arguments = listOf(navArgument("routerId") { type = NavType.StringType })
-                        ) {
-                            HotspotPlansScreen(
-                                onNavigateBack = { navController.popBackStack() }
-                            )
-                        }
-
-                        // Mikrotik Features - Vouchers
-                        composable(
-                            "vouchers/{routerId}",
-                            arguments = listOf(navArgument("routerId") { type = NavType.StringType })
-                        ) {
-                            VoucherScreen(
-                                onNavigateBack = { navController.popBackStack() }
-                            )
-                        }
-
-                        composable(
-                            "active_users/{routerId}",
-                            arguments = listOf(navArgument("routerId") { type = NavType.StringType })
-                        ) {
-                            ActiveUsersScreen(
-                                onNavigateBack = { navController.popBackStack() }
-                            )
-                        }
-
-                        // Mikrotik Features - PPPoE Plans
-                        composable(
-                            "pppoe_plans/{routerId}",
-                            arguments = listOf(navArgument("routerId") { type = NavType.StringType })
-                        ) {
-                            PPPoEPlansScreen(
-                                onNavigateBack = { navController.popBackStack() }
-                            )
-                        }
-
-                        // User Management (Admin)
-                        composable("user_management") {
-                            UserManagementScreen(
-                                onNavigateBack = { navController.popBackStack() },
-                                onNavigateToGlobalFirewall = { navController.navigate("global_firewall") }
-                            )
-                        }
-
-                        // Global Firewall (Admin)
-                        composable("global_firewall") {
-                            GlobalFirewallScreen(
-                                onNavigateBack = { navController.popBackStack() }
-                            )
-                        }
-
-                        // Accounting & Dashboard
-                        composable("accounting") {
-                            AccountingScreen(
-                                onNavigateBack = { navController.popBackStack() }
-                            )
-                        }
-
-                        // Billing & Wallet
-                        composable("billing") {
-                            BillingScreen(
-                                onNavigateBack = { navController.popBackStack() }
-                            )
-                        }
-
-                        // Templates
-                        composable("templates") {
-                            TemplateScreen(
-                                onNavigateBack = { navController.popBackStack() }
-                            )
-                        }
-
-                        // Router Terminal
-                        composable(
-                            "terminal/{routerId}",
-                            arguments = listOf(navArgument("routerId") { type = NavType.StringType })
-                        ) {
-                            TerminalScreen(
-                                onNavigateBack = { navController.popBackStack() }
-                            )
-                        }
-
-                        // PPPoE Users
-                        composable(
-                            "pppoe_users/{routerId}",
-                            arguments = listOf(navArgument("routerId") { type = NavType.StringType })
-                        ) {
-                            PPPoEUsersScreen(
-                                onNavigateBack = { navController.popBackStack() }
+                            }
+                            MainScaffold(
+                                onLogout = {
+                                    // sessionManager.onSessionExpired() fires the
+                                    // SessionEvent.Expired which the LaunchedEffect above
+                                    // catches and navigates to login with full stack clear.
+                                    sessionManager.onSessionExpired()
+                                }
                             )
                         }
                     }
@@ -261,3 +172,4 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
+

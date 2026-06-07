@@ -131,7 +131,8 @@ class RouterDetailsViewModel @Inject constructor(
                  // Info message?
                  _uiState.value = _uiState.value.copy(isLoading = false, error = null) // Reset
             } else {
-                _uiState.value = _uiState.value.copy(isLoading = false, error = "Failed to reboot router")
+                val errorMsg = result.exceptionOrNull()?.message ?: "Failed to reboot router"
+                _uiState.value = _uiState.value.copy(isLoading = false, error = errorMsg)
             }
         }
     }
@@ -143,7 +144,8 @@ class RouterDetailsViewModel @Inject constructor(
             if (result.isSuccess) {
                  _uiState.value = _uiState.value.copy(isLoading = false, error = null)
             } else {
-                _uiState.value = _uiState.value.copy(isLoading = false, error = "Failed to shutdown router")
+                val errorMsg = result.exceptionOrNull()?.message ?: "Failed to shutdown router"
+                _uiState.value = _uiState.value.copy(isLoading = false, error = errorMsg)
             }
         }
     }

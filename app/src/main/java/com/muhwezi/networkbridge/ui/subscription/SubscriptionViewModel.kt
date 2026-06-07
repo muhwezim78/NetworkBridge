@@ -27,6 +27,7 @@ class SubscriptionViewModel @Inject constructor(
     init {
         loadSubscriptionStatus()
         checkUserRole()
+        loadPackages()
     }
 
     private fun checkUserRole() {
@@ -53,6 +54,17 @@ class SubscriptionViewModel @Inject constructor(
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
                     error = result.exceptionOrNull()?.message ?: "Failed to load subscription"
+                )
+            }
+        }
+    }
+
+    private fun loadPackages() {
+        viewModelScope.launch {
+            val result = subscriptionRepository.getPackages()
+            if (result.isSuccess) {
+                _uiState.value = _uiState.value.copy(
+                    packages = result.getOrNull() ?: emptyList()
                 )
             }
         }
@@ -188,5 +200,6 @@ data class SubscriptionUiState(
     val packageType: String = "",
     val duration: String = "",
     val generatedToken: String? = null,
-    val showPaymentDialog: Boolean = false
+    val showPaymentDialog: Boolean = false,
+    val packages: List<SubscriptionPackage> = emptyList()
 )

@@ -20,6 +20,83 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.muhwezi.networkbridge.data.model.Router
 import kotlinx.coroutines.launch
 
+/**
+ * Standalone dashboard content without a drawer — used inside MainScaffold
+ * where the drawer and bottom nav are provided externally.
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun DashboardContent(
+    onNavigateToCreateRouter: () -> Unit,
+    onNavigateToRouterDetails: (String) -> Unit,
+    viewModel: DashboardViewModel = hiltViewModel()
+) {
+    val uiState by viewModel.uiState.collectAsState()
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        if (uiState.isLoading) {
+            CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+        } else if (uiState.error != null) {
+            Text(
+                text = uiState.error!!,
+                color = MaterialTheme.colorScheme.error,
+                modifier = Modifier.align(Alignment.Center)
+            )
+        } else {
+            LazyColumn(
+                contentPadding = PaddingValues(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                item {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().horizontalScroll(androidx.compose.foundation.rememberScrollState()),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        SummaryCard("Total Routers", uiState.totalRouters.toString(), Icons.Default.Settings)
+                        SummaryCard("Online", uiState.routersOnline.toString(), Icons.Default.CheckCircle)
+                        SummaryCard("Income", "UGX ${String.format("%,.0f", uiState.todayIncome)}", Icons.Default.ShoppingCart)
+                        SummaryCard("Vouchers", uiState.activeVouchers.toString(), Icons.Default.Info)
+                    }
+                }
+
+                items(uiState.devices) { device ->
+                    DeviceCard(
+                        device = device,
+                        onCommand = viewModel::sendCommand,
+                        onClick = { onNavigateToRouterDetails(device.id) }
+                    )
+                }
+            }
+        }
+
+        // Floating Action Buttons
+        Column(
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            FloatingActionButton(
+                onClick = onNavigateToCreateRouter,
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary
+            ) {
+                Icon(Icons.Default.Add, contentDescription = "Add Router")
+            }
+            FloatingActionButton(
+                onClick = viewModel::loadDevices,
+                containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+            ) {
+                Icon(Icons.Default.Refresh, contentDescription = "Refresh")
+            }
+        }
+    }
+}
+
+/**
+ * Legacy DashboardScreen with built-in drawer — kept for backward compatibility.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DashboardScreen(
@@ -130,7 +207,7 @@ fun DashboardScreen(
                             ) {
                                 SummaryCard("Total Routers", uiState.totalRouters.toString(), Icons.Default.Settings)
                                 SummaryCard("Online", uiState.routersOnline.toString(), Icons.Default.CheckCircle)
-                                SummaryCard("Income", "UGX ${uiState.todayIncome}", Icons.Default.ShoppingCart)
+                                SummaryCard("Income", "UGX ${String.format("%,.0f", uiState.todayIncome)}", Icons.Default.ShoppingCart)
                                 SummaryCard("Vouchers", uiState.activeVouchers.toString(), Icons.Default.Info)
                             }
                         }
@@ -148,6 +225,7 @@ fun DashboardScreen(
         }
     }
 }
+
 
 @Composable
 fun NavigationDrawerContent(

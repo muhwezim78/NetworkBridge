@@ -28,6 +28,7 @@ fun AccountingScreen(
         topBar = {
             TopAppBar(
                 title = { Text("Dashboard & Revenue") },
+                windowInsets = WindowInsets(0, 0, 0, 0),
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.Default.ArrowBack, "Back")
@@ -123,8 +124,8 @@ fun DashboardStatsCard(stats: DashboardStats) {
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                StatItem("Active Users", stats.totalActiveUsers.toString())
-                StatItem("Online Routers", stats.connectedRouters.toString())
+                StatItem("Active Vouchers", stats.activeVouchers.toString())
+                StatItem("Online Routers", stats.routersOnline.toString())
             }
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -133,7 +134,7 @@ fun DashboardStatsCard(stats: DashboardStats) {
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                StatItem("Today's Revenue", "UGX ${stats.totalRevenueToday}")
+                StatItem("Today's Income", "UGX ${String.format("%,.0f", stats.todayIncome)}")
                 StatItem("Total Routers", stats.totalRouters.toString())
             }
         }
@@ -172,18 +173,18 @@ fun RevenueReportCard(report: IncomeReport) {
         ) {
             Column {
                 Text(
-                    text = report.date ?: "N/A",
+                    text = report.displayDate,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = "${report.count} transactions",
+                    text = "${report.voucherCount} vouchers",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
             Text(
-                text = "UGX ${report.amount}",
+                text = "UGX ${String.format("%,.0f", report.displayAmount)}",
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary

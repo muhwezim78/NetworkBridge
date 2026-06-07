@@ -36,6 +36,7 @@ fun RouterDetailsScreen(
         topBar = {
             TopAppBar(
                 title = { Text(uiState.router?.name ?: "Router Details") },
+                windowInsets = WindowInsets(0, 0, 0, 0),
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Back")
@@ -174,6 +175,18 @@ fun RouterDetailsScreen(
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Text("PPPoE Users")
+                        }
+
+                        val uriHandler = androidx.compose.ui.platform.LocalUriHandler.current
+                        val targetIp = router.hostIp ?: router.realIp
+                        if (targetIp != null) {
+                            Button(
+                                onClick = { uriHandler.openUri("http://$targetIp") },
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary)
+                            ) {
+                                Text("Open Web Interface")
+                            }
                         }
 
                         // Setup Actions

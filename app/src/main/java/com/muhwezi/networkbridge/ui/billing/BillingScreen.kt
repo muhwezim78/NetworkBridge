@@ -45,45 +45,59 @@ fun BillingScreen(
     }
 
     if (uiState.showWithdrawDialog) {
-        AlertDialog(
+        val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+        ModalBottomSheet(
             onDismissRequest = viewModel::hideWithdrawDialog,
-            title = { Text("Request Withdrawal") },
-            text = {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    OutlinedTextField(
-                        value = uiState.withdrawAmount,
-                        onValueChange = viewModel::onWithdrawAmountChange,
-                        label = { Text("Amount") },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                    OutlinedTextField(
-                        value = uiState.withdrawPhone,
-                        onValueChange = viewModel::onWithdrawPhoneChange,
-                        label = { Text("Phone Number") },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
-            },
-            confirmButton = {
-                Button(
-                    onClick = viewModel::requestWithdrawal,
-                    enabled = !uiState.isWithdrawing
+            sheetState = sheetState
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Text(
+                    "Request Withdrawal",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold
+                )
+                OutlinedTextField(
+                    value = uiState.withdrawAmount,
+                    onValueChange = viewModel::onWithdrawAmountChange,
+                    label = { Text("Amount") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    modifier = Modifier.fillMaxWidth()
+                )
+                OutlinedTextField(
+                    value = uiState.withdrawPhone,
+                    onValueChange = viewModel::onWithdrawPhoneChange,
+                    label = { Text("Phone Number") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    if (uiState.isWithdrawing) {
-                        CircularProgressIndicator(modifier = Modifier.size(16.dp), color = Color.White)
-                    } else {
-                        Text("Request")
+                    TextButton(onClick = viewModel::hideWithdrawDialog) {
+                        Text("Cancel")
+                    }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Button(
+                        onClick = viewModel::requestWithdrawal,
+                        enabled = !uiState.isWithdrawing
+                    ) {
+                        if (uiState.isWithdrawing) {
+                            CircularProgressIndicator(modifier = Modifier.size(16.dp), color = Color.White)
+                        } else {
+                            Text("Request")
+                        }
                     }
                 }
-            },
-            dismissButton = {
-                TextButton(onClick = viewModel::hideWithdrawDialog) {
-                    Text("Cancel")
-                }
+                Spacer(modifier = Modifier.height(24.dp))
             }
-        )
+        }
     }
 
     Scaffold(
@@ -91,6 +105,7 @@ fun BillingScreen(
         topBar = {
             TopAppBar(
                 title = { Text("Billing & Wallet") },
+                windowInsets = WindowInsets(0, 0, 0, 0),
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.Default.ArrowBack, "Back")
@@ -204,6 +219,18 @@ fun WalletCard(wallet: WalletResponse) {
                 text = "Total Earned: ${wallet.currency} ${wallet.totalEarned}",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onPrimaryContainer
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = "SMS Wallet: ${wallet.currency} ${wallet.smsBalance}",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onPrimaryContainer
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = "Platform Commission: ${wallet.commissionPercentage}",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
             )
         }
     }

@@ -67,4 +67,17 @@ class SubscriptionRepository @Inject constructor(
             Result.failure(e)
         }
     }
+
+    suspend fun getPackages(): Result<List<com.muhwezi.networkbridge.data.model.SubscriptionPackage>> {
+        return try {
+            val response = subscriptionService.getPackages()
+            if (response.isSuccessful && response.body() != null) {
+                Result.success(response.body()!!)
+            } else {
+                Result.failure(Exception("Failed to fetch packages: ${response.code()}"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
 }

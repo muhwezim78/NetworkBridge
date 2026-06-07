@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.muhwezi.networkbridge.data.model.Router
 import com.muhwezi.networkbridge.data.repository.MikrotikRepository
 import com.muhwezi.networkbridge.data.repository.RouterRepository
+import com.muhwezi.networkbridge.data.repository.AccountingRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -23,7 +24,8 @@ class DashboardViewModel @Inject constructor(
     private val mikrotikRepository: MikrotikRepository,
     private val webSocketRepository: WebSocketRepository,
     private val authRepository: AuthRepository,
-    private val sessionManager: SessionManager
+    private val sessionManager: SessionManager,
+    private val accountingRepository: AccountingRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(DashboardUiState())
@@ -31,7 +33,31 @@ class DashboardViewModel @Inject constructor(
 
     init {
         loadDevices()
+        loadDashboardStats()
         observeLiveEvents()
+    }
+
+    /**
+     * Fetch dashboard stats from the REST API so cards are populated immediately,
+     * rather than waiting for a WebSocket broadcast.
+     */
+    private fun loadDashboardStats() {
+        viewModelScope.launch {
+            val result = accountingRepository.getDashboardStats()
+            if (result.isSuccess) {
+                val stats = result.getOrNull()
+                if (stats != null) {
+                    _uiState.value = _uiState.value.copy(
+                        totalRouters = stats.totalRouters,
+                        routersOnline = stats.routersOnline,
+                        activeVouchers = stats.activeVouchers,
+                        totalRevenue = stats.totalRevenue,
+                        todayIncome = stats.todayIncome,
+                        incomeChange = stats.incomeChange
+                    )
+                }
+            }
+        }
     }
 
     private fun observeLiveEvents() {
@@ -119,5 +145,7 @@ data class DashboardUiState(
     val routersOnline: Long = 0,
     val activeVouchers: Long = 0,
     val totalRevenue: Double = 0.0,
-    val todayIncome: Double = 0.0
+    val todayIncome: Double = 0.0,
+    val incomeChange: String = ""
 )
+

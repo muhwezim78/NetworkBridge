@@ -33,3 +33,11 @@ data class InitiateSubscriptionResponse(
     @SerializedName("invoice_id") val invoiceId: String,
     @SerializedName("message") val message: String
 )
+
+data class SubscriptionPackage(
+    @SerializedName("id") val id: String,
+    @SerializedName("name") val name: String,
+    @SerializedName("price") val price: Double,
+    @SerializedName("duration_days") val durationDays: Int,
+    @SerializedName("router_limit") val routerLimit: Int
+)

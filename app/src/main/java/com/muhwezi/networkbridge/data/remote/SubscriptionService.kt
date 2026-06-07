@@ -18,4 +18,7 @@ interface SubscriptionService {
 
     @POST("subscription/initiate")
     suspend fun initiateSubscription(@Body request: InitiateSubscriptionRequest): Response<InitiateSubscriptionResponse>
+
+    @GET("subscription/packages")
+    suspend fun getPackages(): Response<List<SubscriptionPackage>>
 }

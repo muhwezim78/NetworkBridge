@@ -54,7 +54,7 @@ data class VoucherResponse(
     @SerializedName("plan_id") val planId: String? = null,
     @SerializedName("plan_name") val planName: String? = null,
     @SerializedName("router_id") val routerId: String? = null,
-    @SerializedName("source") val source: String? = null,
+    @SerializedName("created_via") val createdVia: String? = null,
     @SerializedName("comment") val comment: String? = null,
     @SerializedName("created_at") val createdAt: String? = null,
     @SerializedName("first_use_at") val firstUseAt: String? = null,
@@ -62,7 +62,9 @@ data class VoucherResponse(
     @SerializedName("validity_period") val validityPeriod: String? = null,
     @SerializedName("uptime_used") val uptimeUsed: Long? = null,
     @SerializedName("bytes_in") val bytesIn: Long? = null,
-    @SerializedName("bytes_out") val bytesOut: Long? = null
+    @SerializedName("bytes_out") val bytesOut: Long? = null,
+    @SerializedName("price") val price: Double? = null,
+    @SerializedName("phone_number") val phoneNumber: String? = null
 )
 
 data class VoucherPdfRequest(
@@ -77,7 +79,7 @@ data class VoucherCredentials(
 )
 
 data class ActiveHotspotUser(
-    @SerializedName("name") val name: String? = null,
+    @SerializedName("username") val username: String? = null,
     @SerializedName("address") val address: String? = null,
     @SerializedName("mac_address") val macAddress: String? = null,
     @SerializedName("uptime") val uptime: String? = null,
@@ -115,8 +117,13 @@ data class ExecuteCommandRequest(
     @SerializedName("command") val command: String
 )
 
+data class RouterOutput(
+    @SerializedName("data") val data: List<Any>? = null,
+    @SerializedName("status") val status: String? = null
+)
+
 data class ExecuteCommandResponse(
-    @SerializedName("output") val output: Any // Can be JSON object or string
+    @SerializedName("output") val output: RouterOutput
 )
 
 data class PPPoEPlan(
@@ -143,7 +150,7 @@ data class SyncPPPoEPlansRequest(
 )
 
 data class ActivePPPoESession(
-    @SerializedName("name") val name: String? = null,
+    @SerializedName("username") val username: String? = null,
     @SerializedName("service") val service: String? = null,
     @SerializedName("caller_id") val callerId: String? = null,
     @SerializedName("address") val address: String? = null,

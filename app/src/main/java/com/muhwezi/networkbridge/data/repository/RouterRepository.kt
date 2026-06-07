@@ -163,7 +163,8 @@ class RouterRepository @Inject constructor(
             if (response.isSuccessful) {
                 Result.success(Unit)
             } else {
-                Result.failure(Exception(response.message()))
+                val errorMsg = response.errorBody()?.string() ?: response.message()
+                Result.failure(Exception(errorMsg))
             }
         } catch (e: Exception) {
             Result.failure(e)
@@ -176,7 +177,8 @@ class RouterRepository @Inject constructor(
             if (response.isSuccessful) {
                 Result.success(Unit)
             } else {
-                Result.failure(Exception(response.message()))
+                val errorMsg = response.errorBody()?.string() ?: response.message()
+                Result.failure(Exception(errorMsg))
             }
         } catch (e: Exception) {
             Result.failure(e)

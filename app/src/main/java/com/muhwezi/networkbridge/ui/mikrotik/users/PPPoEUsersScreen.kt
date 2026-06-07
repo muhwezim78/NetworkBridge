@@ -33,6 +33,7 @@ fun PPPoEUsersScreen(
         topBar = {
             TopAppBar(
                 title = { Text("PPPoE Users") },
+                windowInsets = WindowInsets(0, 0, 0, 0),
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.Default.ArrowBack, "Back")
@@ -103,70 +104,80 @@ fun AddPPPoEUserDialog(
 ) {
     var expanded by remember { mutableStateOf(false) }
 
-    Dialog(onDismissRequest = onDismiss) {
-        Card {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text(
-                    text = "Create PPPoE User",
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold
-                )
-                Spacer(modifier = Modifier.height(16.dp))
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            Text(
+                text = "Create PPPoE User",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold
+            )
+            Spacer(modifier = Modifier.height(16.dp))
 
+            OutlinedTextField(
+                value = username,
+                onValueChange = onUsernameChange,
+                label = { Text("Username") },
+                modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+
+            OutlinedTextField(
+                value = password,
+                onValueChange = onPasswordChange,
+                label = { Text("Password") },
+                modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+
+            ExposedDropdownMenuBox(
+                expanded = expanded,
+                onExpandedChange = { expanded = !expanded }
+            ) {
                 OutlinedTextField(
-                    value = username,
-                    onValueChange = onUsernameChange,
-                    label = { Text("Username") },
-                    modifier = Modifier.fillMaxWidth()
+                    value = profile,
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text("Profile") },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .menuAnchor()
                 )
-                Spacer(modifier = Modifier.height(8.dp))
-
-                OutlinedTextField(
-                    value = password,
-                    onValueChange = onPasswordChange,
-                    label = { Text("Password") },
-                    modifier = Modifier.fillMaxWidth()
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-
-                ExposedDropdownMenuBox(
+                ExposedDropdownMenu(
                     expanded = expanded,
-                    onExpandedChange = { expanded = !expanded }
+                    onDismissRequest = { expanded = false }
                 ) {
-                    OutlinedTextField(
-                        value = profile,
-                        onValueChange = {},
-                        readOnly = true,
-                        label = { Text("Profile") },
-                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .menuAnchor()
-                    )
-                    ExposedDropdownMenu(
-                        expanded = expanded,
-                        onDismissRequest = { expanded = false }
-                    ) {
-                        profiles.forEach { p ->
-                            DropdownMenuItem(
-                                text = { Text(p.name ?: "Unknown") },
-                                onClick = {
-                                    onProfileChange(p.name ?: "")
-                                    expanded = false
-                                }
-                            )
-                        }
+                    profiles.forEach { p ->
+                        DropdownMenuItem(
+                            text = { Text(p.name ?: "Unknown") },
+                            onClick = {
+                                onProfileChange(p.name ?: "")
+                                expanded = false
+                            }
+                        )
                     }
                 }
-                
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-                    TextButton(onClick = onDismiss) { Text("Cancel") }
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Button(onClick = onAdd) { Text("Create") }
-                }
             }
+            
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                TextButton(onClick = onDismiss) { Text("Cancel") }
+                Spacer(modifier = Modifier.width(8.dp))
+                Button(onClick = {
+                    onAdd()
+                    onDismiss()
+                }) { Text("Create") }
+            }
+            Spacer(modifier = Modifier.height(24.dp))
         }
     }
 }

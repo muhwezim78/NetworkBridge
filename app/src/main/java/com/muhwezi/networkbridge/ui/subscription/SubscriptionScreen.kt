@@ -33,6 +33,7 @@ fun SubscriptionScreen(
         topBar = {
             TopAppBar(
                 title = { Text("Subscription") },
+                windowInsets = WindowInsets(0, 0, 0, 0),
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.Default.ArrowBack, "Back")
@@ -107,6 +108,7 @@ fun SubscriptionScreen(
                     PurchaseSection(
                         packageType = uiState.packageType,
                         phoneNumber = "",
+                        packages = uiState.packages,
                         onPackageChange = viewModel::onPackageTypeChange,
                         onPhoneChange = { },
                         onPay = { viewModel.initiateSubscription(it) },
@@ -119,6 +121,7 @@ fun SubscriptionScreen(
                             packageType = uiState.packageType,
                             duration = uiState.duration,
                             generatedToken = uiState.generatedToken,
+                            packages = uiState.packages,
                             onPackageTypeChange = viewModel::onPackageTypeChange,
                             onDurationChange = viewModel::onDurationChange,
                             onGenerate = viewModel::generateToken,
@@ -224,11 +227,13 @@ fun RedeemTokenSection(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GenerateTokenSection(
     packageType: String,
     duration: String,
     generatedToken: String?,
+    packages: List<com.muhwezi.networkbridge.data.model.SubscriptionPackage>,
     onPackageTypeChange: (String) -> Unit,
     onDurationChange: (String) -> Unit,
     onGenerate: () -> Unit,
@@ -249,14 +254,38 @@ fun GenerateTokenSection(
             )
             Spacer(modifier = Modifier.height(12.dp))
             
-            OutlinedTextField(
-                value = packageType,
-                onValueChange = onPackageTypeChange,
-                label = { Text("Package Type") },
-                modifier = Modifier.fillMaxWidth(),
-                enabled = enabled,
-                singleLine = true
-            )
+            var expandedPackage by remember { mutableStateOf(false) }
+
+            ExposedDropdownMenuBox(
+                expanded = expandedPackage,
+                onExpandedChange = { if (enabled) expandedPackage = !expandedPackage }
+            ) {
+                OutlinedTextField(
+                    value = packageType,
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text("Package Type") },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedPackage) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .menuAnchor(),
+                    enabled = enabled
+                )
+                ExposedDropdownMenu(
+                    expanded = expandedPackage,
+                    onDismissRequest = { expandedPackage = false }
+                ) {
+                    packages.forEach { pkg ->
+                        DropdownMenuItem(
+                            text = { Text(pkg.name) },
+                            onClick = {
+                                onPackageTypeChange(pkg.id) // passing package id/name
+                                expandedPackage = false
+                            }
+                        )
+                    }
+                }
+            }
             
             Spacer(modifier = Modifier.height(8.dp))
             
@@ -304,10 +333,12 @@ fun GenerateTokenSection(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PurchaseSection(
     packageType: String,
     phoneNumber: String,
+    packages: List<com.muhwezi.networkbridge.data.model.SubscriptionPackage>,
     onPackageChange: (String) -> Unit,
     onPhoneChange: (String) -> Unit,
     onPay: (String) -> Unit,
@@ -327,14 +358,38 @@ fun PurchaseSection(
             )
             Spacer(modifier = Modifier.height(12.dp))
             
-            OutlinedTextField(
-                value = packageType,
-                onValueChange = onPackageChange,
-                label = { Text("Package (e.g., standard_monthly)") },
-                modifier = Modifier.fillMaxWidth(),
-                enabled = enabled,
-                singleLine = true
-            )
+            var expandedPackage by remember { mutableStateOf(false) }
+
+            ExposedDropdownMenuBox(
+                expanded = expandedPackage,
+                onExpandedChange = { if (enabled) expandedPackage = !expandedPackage }
+            ) {
+                OutlinedTextField(
+                    value = packageType,
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text("Select Package") },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedPackage) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .menuAnchor(),
+                    enabled = enabled
+                )
+                ExposedDropdownMenu(
+                    expanded = expandedPackage,
+                    onDismissRequest = { expandedPackage = false }
+                ) {
+                    packages.forEach { pkg ->
+                        DropdownMenuItem(
+                            text = { Text(pkg.name) },
+                            onClick = {
+                                onPackageChange(pkg.id)
+                                expandedPackage = false
+                            }
+                        )
+                    }
+                }
+            }
             
             Spacer(modifier = Modifier.height(8.dp))
             

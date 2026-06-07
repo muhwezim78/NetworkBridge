@@ -13,6 +13,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.platform.LocalContext
@@ -41,6 +43,7 @@ fun VoucherScreen(
         topBar = {
             TopAppBar(
                 title = { Text("Vouchers") },
+                windowInsets = WindowInsets(0, 0, 0, 0),
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.Default.ArrowBack, "Back")
@@ -202,113 +205,126 @@ fun GenerateVouchersDialog(
     var expandedPlan by remember { mutableStateOf(false) }
     val passwordModes = listOf("random", "same_as_username", "blank")
 
-    Dialog(onDismissRequest = onDismiss) {
-        Card {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text(
-                    text = "Generate Vouchers",
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold
-                )
-                Spacer(modifier = Modifier.height(16.dp))
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            Text(
+                text = "Generate Vouchers",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold
+            )
+            Spacer(modifier = Modifier.height(16.dp))
 
-                ExposedDropdownMenuBox(
+            ExposedDropdownMenuBox(
+                expanded = expandedPlan,
+                onExpandedChange = { expandedPlan = !expandedPlan }
+            ) {
+                OutlinedTextField(
+                    value = plans.find { it.id == planId }?.name ?: planId,
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text("Plan *") },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedPlan) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .menuAnchor()
+                )
+                ExposedDropdownMenu(
                     expanded = expandedPlan,
-                    onExpandedChange = { expandedPlan = !expandedPlan }
+                    onDismissRequest = { expandedPlan = false }
                 ) {
-                    OutlinedTextField(
-                        value = plans.find { it.id == planId }?.name ?: planId,
-                        onValueChange = {},
-                        readOnly = true,
-                        label = { Text("Plan *") },
-                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedPlan) },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .menuAnchor()
-                    )
-                    ExposedDropdownMenu(
-                        expanded = expandedPlan,
-                        onDismissRequest = { expandedPlan = false }
-                    ) {
-                        plans.forEach { plan ->
-                            DropdownMenuItem(
-                                text = { Text("${plan.name} (${plan.price})") },
-                                onClick = {
-                                    onPlanIdChange(plan.id)
-                                    expandedPlan = false
-                                }
-                            )
-                        }
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                OutlinedTextField(
-                    value = count,
-                    onValueChange = onCountChange,
-                    label = { Text("Count *") },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                ExposedDropdownMenuBox(
-                    expanded = expandedPasswordMode,
-                    onExpandedChange = { expandedPasswordMode = !expandedPasswordMode }
-                ) {
-                    OutlinedTextField(
-                        value = passwordMode,
-                        onValueChange = {},
-                        readOnly = true,
-                        label = { Text("Password Mode") },
-                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedPasswordMode) },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .menuAnchor()
-                    )
-                    ExposedDropdownMenu(
-                        expanded = expandedPasswordMode,
-                        onDismissRequest = { expandedPasswordMode = false }
-                    ) {
-                        passwordModes.forEach { mode ->
-                            DropdownMenuItem(
-                                text = { Text(mode) },
-                                onClick = {
-                                    onPasswordModeChange(mode)
-                                    expandedPasswordMode = false
-                                }
-                            )
-                        }
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                OutlinedTextField(
-                    value = length,
-                    onValueChange = onLengthChange,
-                    label = { Text("Length") },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End
-                ) {
-                    TextButton(onClick = onDismiss) {
-                        Text("Cancel")
-                    }
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Button(onClick = onGenerate) {
-                        Text("Generate")
+                    plans.forEach { plan ->
+                        DropdownMenuItem(
+                            text = { Text("${plan.name} (${plan.price})") },
+                            onClick = {
+                                onPlanIdChange(plan.id)
+                                expandedPlan = false
+                            }
+                        )
                     }
                 }
             }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            OutlinedTextField(
+                value = count,
+                onValueChange = onCountChange,
+                label = { Text("Count *") },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            ExposedDropdownMenuBox(
+                expanded = expandedPasswordMode,
+                onExpandedChange = { expandedPasswordMode = !expandedPasswordMode }
+            ) {
+                OutlinedTextField(
+                    value = passwordMode,
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text("Password Mode") },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedPasswordMode) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .menuAnchor()
+                )
+                ExposedDropdownMenu(
+                    expanded = expandedPasswordMode,
+                    onDismissRequest = { expandedPasswordMode = false }
+                ) {
+                    passwordModes.forEach { mode ->
+                        DropdownMenuItem(
+                            text = { Text(mode) },
+                            onClick = {
+                                onPasswordModeChange(mode)
+                                expandedPasswordMode = false
+                            }
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            OutlinedTextField(
+                value = length,
+                onValueChange = onLengthChange,
+                label = { Text("Length *") },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                TextButton(onClick = onDismiss) {
+                    Text("Cancel")
+                }
+                Spacer(modifier = Modifier.width(8.dp))
+                Button(onClick = {
+                    onGenerate()
+                    onDismiss()
+                }) {
+                    Text("Generate")
+                }
+            }
+            Spacer(modifier = Modifier.height(24.dp))
         }
     }
 }

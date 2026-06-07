@@ -69,6 +69,7 @@ class WebSocketService @Inject constructor(
                     "dashboard_stats" -> gson.fromJson(text, WebSocketEvent.DashboardStats::class.java)
                     "ActiveUserUpdate" -> gson.fromJson(text, WebSocketEvent.ActiveUserUpdate::class.java)
                     "TrafficUpdate" -> gson.fromJson(text, WebSocketEvent.TrafficUpdate::class.java)
+                    "notification" -> gson.fromJson(text, WebSocketEvent.NewNotification::class.java)
                     else -> null
                 }
 

@@ -39,7 +39,21 @@ class TerminalViewModel @Inject constructor(
 
             val result = mikrotikRepository.executeCommand(routerId, cmd)
             if (result.isSuccess) {
-                val outputText = result.getOrNull()?.output?.toString() ?: "No output"
+                val res = result.getOrNull()
+                val outputText = when {
+                    res?.output?.data?.isNotEmpty() == true -> {
+                        res.output.data.joinToString("\n") { item ->
+                            if (item is Map<*, *>) {
+                                item.entries.filter { it.key != "type" }
+                                    .joinToString(" ") { "${it.key}=${it.value}" }
+                            } else {
+                                item.toString()
+                            }
+                        }
+                    }
+                    res?.output?.status != null -> "Status: ${res.output.status}"
+                    else -> "No output"
+                }
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
                     output = "${_uiState.value.output}\n$outputText",
@@ -62,6 +76,6 @@ class TerminalViewModel @Inject constructor(
 
 data class TerminalUiState(
     val command: String = "",
-    val output: String = "MikroTik Terminal Ready\nType a command (e.g. /system/resource/print)",
+    val output: String = "MikroTik Terminal Ready\nExamples:\n- /system/resource/print\n- /ip/address/print\n- ping 8.8.8.8 count=4",
     val isLoading: Boolean = false
 )

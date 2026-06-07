@@ -37,4 +37,15 @@ interface BillingService {
 
     @GET("admin/commissions/history")
     suspend fun getCommissionsHistory(): Response<List<CommissionHistoryItem>>
+
+    // --- Loyalty ---
+
+    @GET("routers/{router_id}/loyalty")
+    suspend fun getLoyaltySettings(@Path("router_id") routerId: String): Response<LoyaltySettingsResponse>
+
+    @PUT("routers/{router_id}/loyalty")
+    suspend fun updateLoyaltySettings(
+        @Path("router_id") routerId: String,
+        @Body request: UpdateLoyaltySettingsRequest
+    ): Response<Unit>
 }

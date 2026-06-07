@@ -215,108 +215,118 @@ fun AddFirewallRuleDialog(
     onDismiss: () -> Unit,
     onAdd: () -> Unit
 ) {
-    Dialog(onDismissRequest = onDismiss) {
-        Card {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text(
-                    text = "Add Firewall Rule",
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold
-                )
-                Spacer(modifier = Modifier.height(16.dp))
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            Text(
+                text = "Add Firewall Rule",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold
+            )
+            Spacer(modifier = Modifier.height(16.dp))
 
-                // Action selector
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text("Action:", modifier = Modifier.width(60.dp))
-                    FilterChip(
-                        selected = action == "drop",
-                        onClick = { onActionChange("drop") },
-                        label = { Text("Drop") }
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    FilterChip(
-                        selected = action == "accept",
-                        onClick = { onActionChange("accept") },
-                        label = { Text("Accept") }
-                    )
+            // Action selector
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text("Action:", modifier = Modifier.width(60.dp))
+                FilterChip(
+                    selected = action == "drop",
+                    onClick = { onActionChange("drop") },
+                    label = { Text("Drop") }
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                FilterChip(
+                    selected = action == "accept",
+                    onClick = { onActionChange("accept") },
+                    label = { Text("Accept") }
+                )
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            OutlinedTextField(
+                value = chain,
+                onValueChange = onChainChange,
+                label = { Text("Chain *") },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            OutlinedTextField(
+                value = srcAddress,
+                onValueChange = onSrcAddressChange,
+                label = { Text("Source Address") },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            OutlinedTextField(
+                value = dstAddress,
+                onValueChange = onDstAddressChange,
+                label = { Text("Destination Address") },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Row(modifier = Modifier.fillMaxWidth()) {
+                OutlinedTextField(
+                    value = protocol,
+                    onValueChange = onProtocolChange,
+                    label = { Text("Protocol") },
+                    modifier = Modifier.weight(1f),
+                    singleLine = true
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                OutlinedTextField(
+                    value = dstPort,
+                    onValueChange = onDstPortChange,
+                    label = { Text("Dst Port") },
+                    modifier = Modifier.weight(1f),
+                    singleLine = true
+                )
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            OutlinedTextField(
+                value = comment,
+                onValueChange = onCommentChange,
+                label = { Text("Comment") },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                TextButton(onClick = onDismiss) {
+                    Text("Cancel")
                 }
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                OutlinedTextField(
-                    value = chain,
-                    onValueChange = onChainChange,
-                    label = { Text("Chain *") },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                OutlinedTextField(
-                    value = srcAddress,
-                    onValueChange = onSrcAddressChange,
-                    label = { Text("Source Address") },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                OutlinedTextField(
-                    value = dstAddress,
-                    onValueChange = onDstAddressChange,
-                    label = { Text("Destination Address") },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Row(modifier = Modifier.fillMaxWidth()) {
-                    OutlinedTextField(
-                        value = protocol,
-                        onValueChange = onProtocolChange,
-                        label = { Text("Protocol") },
-                        modifier = Modifier.weight(1f),
-                        singleLine = true
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    OutlinedTextField(
-                        value = dstPort,
-                        onValueChange = onDstPortChange,
-                        label = { Text("Dst Port") },
-                        modifier = Modifier.weight(1f),
-                        singleLine = true
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                OutlinedTextField(
-                    value = comment,
-                    onValueChange = onCommentChange,
-                    label = { Text("Comment") },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    TextButton(onClick = onDismiss) {
-                        Text("Cancel")
-                    }
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Button(onClick = onAdd) {
-                        Text("Add Rule")
-                    }
+                Spacer(modifier = Modifier.width(8.dp))
+                Button(onClick = {
+                    onAdd()
+                    onDismiss()
+                }) {
+                    Text("Add Rule")
                 }
             }
+            Spacer(modifier = Modifier.height(24.dp))
         }
     }
 }

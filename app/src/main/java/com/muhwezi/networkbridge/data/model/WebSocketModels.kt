@@ -60,6 +60,15 @@ sealed class WebSocketEvent {
         @SerializedName("bytes_in") val bytesIn: Long,
         @SerializedName("bytes_out") val bytesOut: Long
     ) : WebSocketEvent()
+
+    data class NewNotification(
+        @SerializedName("type") override val type: String = "notification",
+        @SerializedName("id") val id: String,
+        @SerializedName("title") val title: String,
+        @SerializedName("message") val message: String,
+        @SerializedName("level") val level: String,
+        @SerializedName("created_at") val createdAt: String
+    ) : WebSocketEvent()
 }
 
 data class ChartData(

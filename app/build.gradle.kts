@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.compose.compiler)
     id("com.google.dagger.hilt.android")
     kotlin("kapt")
+    alias(libs.plugins.google.services)
 }
 
 android {
@@ -99,10 +100,18 @@ dependencies {
     // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
 
+    // WireGuard
+    implementation("com.wireguard.android:tunnel:1.0.20260102")
+
     // Testing
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
+
+    // Firebase
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.analytics)
+    implementation(libs.firebase.messaging)
 }
 
 kapt {

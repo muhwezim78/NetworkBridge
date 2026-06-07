@@ -33,6 +33,8 @@ data class RouterTemplateConfig(
     @SerializedName("router_id") val routerId: String,
     @SerializedName("login_template_id") val loginTemplateId: String?,
     @SerializedName("payment_template_id") val paymentTemplateId: String?,
+    @SerializedName("unified_template_id") val unifiedTemplateId: String?,
+    @SerializedName("success_template_id") val successTemplateId: String?,
     @SerializedName("variables_values") val variablesValues: Map<String, String>?,
     @SerializedName("mobile_money_enabled") val mobileMoneyEnabled: Boolean
 )
@@ -40,6 +42,8 @@ data class RouterTemplateConfig(
 data class UpdateRouterTemplateRequest(
     @SerializedName("login_template_id") val loginTemplateId: String? = null,
     @SerializedName("payment_template_id") val paymentTemplateId: String? = null,
+    @SerializedName("unified_template_id") val unifiedTemplateId: String? = null,
+    @SerializedName("success_template_id") val successTemplateId: String? = null,
     @SerializedName("variables_values") val variablesValues: Map<String, String>? = null,
     @SerializedName("mobile_money_enabled") val mobileMoneyEnabled: Boolean? = null
 )

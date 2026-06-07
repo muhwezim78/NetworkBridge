@@ -98,6 +98,32 @@ class AuthRepository @Inject constructor(
         }
     }
 
+    suspend fun updateProfile(request: com.muhwezi.networkbridge.data.model.UpdateProfileRequest): Result<Unit> {
+        return try {
+            val response = authService.updateProfile(request)
+            if (response.isSuccessful) {
+                Result.success(Unit)
+            } else {
+                Result.failure(Exception(handleError(response.code())))
+            }
+        } catch (e: Exception) {
+            Result.failure(handleException(e))
+        }
+    }
+
+    suspend fun changePassword(old: String, new: String): Result<Unit> {
+        return try {
+            val response = authService.changePassword(com.muhwezi.networkbridge.data.model.ChangePasswordRequest(old, new))
+            if (response.isSuccessful) {
+                Result.success(Unit)
+            } else {
+                Result.failure(Exception(handleError(response.code())))
+            }
+        } catch (e: Exception) {
+            Result.failure(handleException(e))
+        }
+    }
+
     suspend fun logout() {
         tokenManager.deleteTokens()
     }

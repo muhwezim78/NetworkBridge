@@ -36,6 +36,7 @@ fun PPPoEPlansScreen(
         topBar = {
             TopAppBar(
                 title = { Text("PPPoE Plans") },
+                windowInsets = WindowInsets(0, 0, 0, 0),
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.Default.ArrowBack, "Back")
@@ -164,6 +165,7 @@ fun PPPoEPlanCard(plan: PPPoEPlan) {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreatePPPoEPlanDialog(
     planName: String,
@@ -179,80 +181,90 @@ fun CreatePPPoEPlanDialog(
     onDismiss: () -> Unit,
     onCreate: () -> Unit
 ) {
-    Dialog(onDismissRequest = onDismiss) {
-        Card {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text(
-                    text = "Create PPPoE Plan",
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold
-                )
-                Spacer(modifier = Modifier.height(16.dp))
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            Text(
+                text = "Create PPPoE Plan",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold
+            )
+            Spacer(modifier = Modifier.height(16.dp))
 
-                OutlinedTextField(
-                    value = planName,
-                    onValueChange = onPlanNameChange,
-                    label = { Text("Plan Name *") },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
-                )
+            OutlinedTextField(
+                value = planName,
+                onValueChange = onPlanNameChange,
+                label = { Text("Plan Name *") },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true
+            )
 
-                Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
-                OutlinedTextField(
-                    value = planPrice,
-                    onValueChange = onPlanPriceChange,
-                    label = { Text("Price *") },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
-                )
+            OutlinedTextField(
+                value = planPrice,
+                onValueChange = onPlanPriceChange,
+                label = { Text("Price *") },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true
+            )
 
-                Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
-                OutlinedTextField(
-                    value = localAddress,
-                    onValueChange = onLocalAddressChange,
-                    label = { Text("Local Address") },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
-                )
+            OutlinedTextField(
+                value = localAddress,
+                onValueChange = onLocalAddressChange,
+                label = { Text("Local Address") },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true
+            )
 
-                Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
-                OutlinedTextField(
-                    value = remoteAddress,
-                    onValueChange = onRemoteAddressChange,
-                    label = { Text("Remote Address") },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
-                )
+            OutlinedTextField(
+                value = remoteAddress,
+                onValueChange = onRemoteAddressChange,
+                label = { Text("Remote Address") },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true
+            )
 
-                Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
-                OutlinedTextField(
-                    value = rateLimit,
-                    onValueChange = onRateLimitChange,
-                    label = { Text("Rate Limit (e.g. 10M/10M)") },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
-                )
+            OutlinedTextField(
+                value = rateLimit,
+                onValueChange = onRateLimitChange,
+                label = { Text("Rate Limit (e.g. 10M/10M)") },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true
+            )
 
-                Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    TextButton(onClick = onDismiss) {
-                        Text("Cancel")
-                    }
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Button(onClick = onCreate) {
-                        Text("Create")
-                    }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                TextButton(onClick = onDismiss) {
+                    Text("Cancel")
+                }
+                Spacer(modifier = Modifier.width(8.dp))
+                Button(onClick = {
+                    onCreate()
+                    onDismiss()
+                }) {
+                    Text("Create")
                 }
             }
+            Spacer(modifier = Modifier.height(24.dp))
         }
     }
 }

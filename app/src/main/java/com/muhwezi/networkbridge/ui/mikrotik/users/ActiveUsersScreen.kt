@@ -27,6 +27,7 @@ fun ActiveUsersScreen(
         topBar = {
             TopAppBar(
                 title = { Text("Active Users") },
+                windowInsets = WindowInsets(0, 0, 0, 0),
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.Default.ArrowBack, "Back")
@@ -82,7 +83,7 @@ fun ActiveUserCard(user: ActiveHotspotUser) {
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
-                text = user.name ?: "Unknown",
+                text = user.username ?: "Unknown",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
             )

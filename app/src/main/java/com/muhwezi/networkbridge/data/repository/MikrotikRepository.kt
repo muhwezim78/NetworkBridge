@@ -80,10 +80,15 @@ class MikrotikRepository @Inject constructor(
         } catch (e: Exception) { Result.failure(e) }
     }
 
+    private fun <T> handleFailure(response: retrofit2.Response<T>): Result<Nothing> {
+        val errorMsg = response.errorBody()?.string() ?: "Error: ${response.code()}"
+        return Result.failure(Exception(errorMsg))
+    }
+
     suspend fun executeCommand(routerId: String, command: String): Result<ExecuteCommandResponse> {
         return try {
             val response = mikrotikService.executeCommand(routerId, ExecuteCommandRequest(command))
-            if (response.isSuccessful && response.body() != null) Result.success(response.body()!!) else Result.failure(Exception("Error: ${response.code()}"))
+            if (response.isSuccessful && response.body() != null) Result.success(response.body()!!) else handleFailure(response)
         } catch (e: Exception) { Result.failure(e) }
     }
 

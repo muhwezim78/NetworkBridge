@@ -36,6 +36,7 @@ fun HotspotPlansScreen(
         topBar = {
             TopAppBar(
                 title = { Text("Hotspot Plans") },
+                windowInsets = WindowInsets(0, 0, 0, 0),
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.Default.ArrowBack, "Back")
@@ -161,6 +162,7 @@ fun PlanCard(plan: HotspotPlan) {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreatePlanDialog(
     planName: String,
@@ -176,80 +178,90 @@ fun CreatePlanDialog(
     onDismiss: () -> Unit,
     onCreate: () -> Unit
 ) {
-    Dialog(onDismissRequest = onDismiss) {
-        Card {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text(
-                    text = "Create Hotspot Plan",
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold
-                )
-                Spacer(modifier = Modifier.height(16.dp))
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            Text(
+                text = "Create Hotspot Plan",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold
+            )
+            Spacer(modifier = Modifier.height(16.dp))
 
-                OutlinedTextField(
-                    value = planName,
-                    onValueChange = onPlanNameChange,
-                    label = { Text("Plan Name *") },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
-                )
+            OutlinedTextField(
+                value = planName,
+                onValueChange = onPlanNameChange,
+                label = { Text("Plan Name *") },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true
+            )
 
-                Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
-                OutlinedTextField(
-                    value = planPrice,
-                    onValueChange = onPlanPriceChange,
-                    label = { Text("Price *") },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
-                )
+            OutlinedTextField(
+                value = planPrice,
+                onValueChange = onPlanPriceChange,
+                label = { Text("Price *") },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true
+            )
 
-                Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
-                OutlinedTextField(
-                    value = uptimeLimit,
-                    onValueChange = onUptimeLimitChange,
-                    label = { Text("Uptime Limit (seconds)") },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
-                )
+            OutlinedTextField(
+                value = uptimeLimit,
+                onValueChange = onUptimeLimitChange,
+                label = { Text("Uptime Limit (seconds)") },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true
+            )
 
-                Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
-                OutlinedTextField(
-                    value = dataLimit,
-                    onValueChange = onDataLimitChange,
-                    label = { Text("Data Limit (bytes)") },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
-                )
+            OutlinedTextField(
+                value = dataLimit,
+                onValueChange = onDataLimitChange,
+                label = { Text("Data Limit (bytes)") },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true
+            )
 
-                Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
-                OutlinedTextField(
-                    value = sharedUsers,
-                    onValueChange = onSharedUsersChange,
-                    label = { Text("Shared Users") },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
-                )
+            OutlinedTextField(
+                value = sharedUsers,
+                onValueChange = onSharedUsersChange,
+                label = { Text("Shared Users") },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true
+            )
 
-                Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    TextButton(onClick = onDismiss) {
-                        Text("Cancel")
-                    }
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Button(onClick = onCreate) {
-                        Text("Create")
-                    }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                TextButton(onClick = onDismiss) {
+                    Text("Cancel")
+                }
+                Spacer(modifier = Modifier.width(8.dp))
+                Button(onClick = {
+                    onCreate()
+                    onDismiss()
+                }) {
+                    Text("Create")
                 }
             }
+            Spacer(modifier = Modifier.height(24.dp))
         }
     }
 }

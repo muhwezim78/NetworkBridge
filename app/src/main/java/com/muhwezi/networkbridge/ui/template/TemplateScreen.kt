@@ -27,6 +27,7 @@ fun TemplateScreen(
         topBar = {
             TopAppBar(
                 title = { Text("Templates") },
+                windowInsets = WindowInsets(0, 0, 0, 0),
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.Default.ArrowBack, "Back")

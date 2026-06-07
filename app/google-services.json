@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "1024452281194",
+    "project_id": "terraconnect-uganda",
+    "storage_bucket": "terraconnect-uganda.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1024452281194:android:05909e53a55a1130cb9b13",
+        "android_client_info": {
+          "package_name": "com.muhwezi.networkbridge"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1024452281194-h67g0k6gav0ocjoiaduiplmqv4ocgujt.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDruwBqhQ_A-EMgRMfY2M_4uwgW1eY6iLk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1024452281194-h67g0k6gav0ocjoiaduiplmqv4ocgujt.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
