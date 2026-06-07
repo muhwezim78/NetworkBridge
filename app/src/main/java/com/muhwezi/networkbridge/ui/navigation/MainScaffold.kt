@@ -50,9 +50,21 @@ private val mainRoutes = setOf("dashboard", "billing", "sms_analytics", "support
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScaffold(
-    onLogout: () -> Unit
+    onLogout: () -> Unit,
+    deepLinkRoute: String? = null,
+    onDeepLinkConsumed: () -> Unit = {}
 ) {
     val navController = rememberNavController()
+
+    // Navigate to the deep-link destination when a notification tap delivers one
+    LaunchedEffect(deepLinkRoute) {
+        if (deepLinkRoute != null) {
+            navController.navigate(deepLinkRoute) {
+                launchSingleTop = true
+            }
+            onDeepLinkConsumed()
+        }
+    }
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 

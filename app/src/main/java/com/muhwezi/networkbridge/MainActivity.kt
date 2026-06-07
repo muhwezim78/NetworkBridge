@@ -1,5 +1,6 @@
 package com.muhwezi.networkbridge
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -58,6 +59,19 @@ class MainActivity : ComponentActivity() {
             }
         }
 
+    // Holds the pending deep-link route from notification taps.
+    // Fed by both onCreate (cold start) and onNewIntent (warm start).
+    private val pendingDeepLink = mutableStateOf<String?>(null)
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        val target = intent.getStringExtra(AppFirebaseMessagingService.EXTRA_NAVIGATE_TO)
+        if (target != null) {
+            pendingDeepLink.value = target
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
@@ -113,10 +127,15 @@ class MainActivity : ComponentActivity() {
                         }
                     }
 
-                    // Check if launched from a notification tap
-                    val notificationDeepLink = intent?.getStringExtra(
-                        AppFirebaseMessagingService.EXTRA_NAVIGATE_TO
-                    )
+                    // Seed the deep-link from the launch intent on cold start
+                    LaunchedEffect(Unit) {
+                        val target = intent?.getStringExtra(
+                            AppFirebaseMessagingService.EXTRA_NAVIGATE_TO
+                        )
+                        if (target != null) {
+                            pendingDeepLink.value = target
+                        }
+                    }
 
                     NavHost(navController = navController, startDestination = startDest) {
                         // Authentication - Login
@@ -149,21 +168,17 @@ class MainActivity : ComponentActivity() {
 
                         // Main app shell — contains bottom nav, drawer, and all authenticated screens
                         composable("main") {
-                            // If launched from a push notification, navigate to notifications after load
-                            LaunchedEffect(notificationDeepLink) {
-                                if (notificationDeepLink == "notifications") {
-                                    navController.navigate("main") {
-                                        popUpTo("main") { inclusive = true }
-                                    }
-                                }
-                            }
+                            val deepLink by pendingDeepLink
+
                             MainScaffold(
                                 onLogout = {
                                     // sessionManager.onSessionExpired() fires the
                                     // SessionEvent.Expired which the LaunchedEffect above
                                     // catches and navigates to login with full stack clear.
                                     sessionManager.onSessionExpired()
-                                }
+                                },
+                                deepLinkRoute = deepLink,
+                                onDeepLinkConsumed = { pendingDeepLink.value = null }
                             )
                         }
                     }
